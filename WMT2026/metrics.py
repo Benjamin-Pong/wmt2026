@@ -44,7 +44,11 @@ def trim_subword_probs(subword_probs, prediction, tokenizer):
     subword_probs are padded, so they need to be trimmed to their actual sequence lengths
     Use tokenizer to tokenizer the predictions
     '''
-def main(data, output, xcomet_encoder):
+    tokens = tokenizer.encode(prediction)
+    length_prediction = len(tokens)
+    
+
+def main(data, output, xcomet_tokenizer):
     '''
     input args
     Computes all relevant metrics 
@@ -55,6 +59,7 @@ def main(data, output, xcomet_encoder):
         for system in scores_dict:
             prediction =  scores_dict[system][]
             subword_probs = torch.tensor(scores_dict[system]['subword_probs']) #(batch size, seq_length, 4)
+            subword_probs = trim_subword_probs(subword_probs, prediction, xcomet_tokenizer)
             entropy = compute_entropy(subword_probs)
             scores_dict[system]['entropy']=entropy.tolist() #store entropy as a metric to json
         d['scores'] = scores_dict
@@ -64,7 +69,7 @@ if __name__ == '__main__':
     model_path = download_model("Unbabel/XCOMET-XL")
     
     xcomet = load_from_checkpoint(model_path)
-    xcomet_encoder = xcomet.encoder
+    xcomet_tokenizer = xcomet.encoder.tokenizer
     main()
     
 

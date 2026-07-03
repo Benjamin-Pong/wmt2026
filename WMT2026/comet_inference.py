@@ -49,7 +49,7 @@ def score(human_eval, xcomet, output_file, locale, mode):
     xcomet scores all systems per line at one shot
     '''
     with open(output_file, mode, encoding='utf-8') as f:
-        for line in human_eval:
+        for i, line in enumerate(human_eval):
             human_scores = line['scores']
             src_lang = line['doc_id'].split('_')[0].split('-')[0]
             tgt_lang = line['doc_id'].split('_')[1].split('-')[0]
@@ -116,6 +116,9 @@ def score(human_eval, xcomet, output_file, locale, mode):
         
                 res_per_line = {'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'scores': scores}
                 f.write(json.dumps(res_per_line, ensure_ascii=False)+'\n')
+                f.flush()
+                os.fsync(f.fileno())
+                print(f"line {i} written, file now {os.path.getsize(output_file):,} bytes", flush=True)
                 
 
 if __name__ == "__main__":

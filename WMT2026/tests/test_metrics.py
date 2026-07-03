@@ -2,7 +2,9 @@ import pytests
 import torch
 import torch.distributions as td
 
-
+'''
+Tests functionalities from metrics.py
+'''
 
 def test_entropy():
     '''
