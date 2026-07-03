@@ -160,6 +160,27 @@ class XCOMETMetric(UnifiedMetric):
             # Rescale between 0 and 1
             scores = (torch.tensor(scores) * -1 + 25) / 25
             return scores
+        def trim(subwords:torch.Tensor, logits:torch.Tensor, mt_offsets:torch.Tensor, input_ids:torch.Tensor, tokenizer):
+            '''
+            helper function that trims subword_probs,logits, and the actual tokens for qualitative inspection
+            outputs subword_probs containing tensors corresponding to mt segment lengths
+            outputs logits containing tensors corresponding to mt segment lengths
+            '''
+            trimmed_subwords: List[List] = [] 
+            trimmed_logits: List[List] = []
+            tokens: List[str] = []
+            token_ids = []
+            for i in range(len(mt_offsets)): #recall that each idx in a batch is a system prediction.
+                mt_length = len(mt_offsets[i]) #batch dimension =1 
+                curr_subword = subwords[i][:mt_length].tolist()
+                curr_logits = logits[i][:mt_length].tolist()
+                curr_tokens = tokenizer.convert_ids_to_tokens(input_ids[i][:mt_length].tolist())
+        
+                trimmed_logits.append(curr_logits)
+                trimmed_subwords.append(curr_subword)
+                tokens.append(curr_tokens)
+                token_ids.append(input_ids[i][:mt_length].tolist())
+            return trimmed_subwords, trimmed_logits, tokens, token_ids
 
         # XCOMET is suposed to be used with a reference thus 3 different inputs.
         if len(batch) == 3:
@@ -213,9 +234,13 @@ class XCOMETMetric(UnifiedMetric):
             mt_mask = batch[0]["label_ids"] != -1
             mt_length = mt_mask.sum(dim=1)
             seq_len = mt_length.max()
+            mt_offsets = batch[0]["mt_offsets"]
+            input_ids = batch[0]["input_ids"]
             subword_probs = nn.functional.softmax(model_output.logits, dim=2)[
                 :, :seq_len, :
             ]
+            logits = model_output.logits[:, :seq_len, :]
+            trimmed_subwords, trimmed_logits, t_tokens, token_ids = trim(subword_probs, logits, mt_offsets, input_ids, self.encoder.tokenizer)
             error_spans = self.decode(
                 subword_probs, batch[0]["input_ids"], batch[0]["mt_offsets"]
             )
@@ -230,8 +255,10 @@ class XCOMETMetric(UnifiedMetric):
                     src_scores=regression_score,
                     mqm_scores=mqm_scores,
                     error_spans=error_spans,
-                    subword_probs = subword_probs,
-                    logits = model_output.logits
+                    subword_probs = trimmed_subwords,
+                    logits = trimmed_logits,
+                    tokens=t_tokens,
+                    token_ids = token_ids
                 ),
             )
         return batch_prediction
