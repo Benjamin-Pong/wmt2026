@@ -174,12 +174,17 @@ class XCOMETMetric(UnifiedMetric):
                 mt_length = len(mt_offsets[i]) #batch dimension =1 
                 curr_subword = subwords[i][:mt_length].tolist()
                 curr_logits = logits[i][:mt_length].tolist()
-                curr_tokens = tokenizer.convert_ids_to_tokens(input_ids[i][:mt_length].tolist())
+                curr_token_ids = input_ids[i][:mt_length].tolist()
+                curr_tokens = tokenizer.convert_ids_to_tokens(curr_token_ids)
         
                 trimmed_logits.append(curr_logits)
                 trimmed_subwords.append(curr_subword)
                 tokens.append(curr_tokens)
-                token_ids.append(input_ids[i][:mt_length].tolist())
+                token_ids.append(curr_token_ids)
+                assert subwords[i][:mt_length].shape == logits[i][:mt_length].shape \
+               
+                assert len(curr_subword)==len(curr_logits)==len(curr_tokens)==len(curr_token_ids \
+                                                                                  )
             return trimmed_subwords, trimmed_logits, tokens, token_ids
 
         # XCOMET is suposed to be used with a reference thus 3 different inputs.

@@ -140,6 +140,7 @@ if __name__ == "__main__":
       human_eval = [json.loads(line) for line in f]
 
     if args.slice:
+        print("slice output file")
         with open(output_file, 'r', encoding='utf-8') as g:
             out = [json.loads(line) for line in g]
             last_index = len(out)-1
