@@ -39,13 +39,6 @@ def compute_continuous(subword_probs):
     continuous_metric = (1- subword_probs[:,:,:, -3:].sum(axis=-1)).T
     return continuous_metric
 
-def trim_subword_probs(subword_probs, prediction, tokenizer):
-    '''
-    subword_probs are padded, so they need to be trimmed to their actual sequence lengths
-    Use tokenizer to tokenizer the predictions
-    '''
-    tokens = tokenizer.encode(prediction)
-    length_prediction = len(tokens)
     
 
 def main(data, output, xcomet_tokenizer):
@@ -55,11 +48,10 @@ def main(data, output, xcomet_tokenizer):
     '''
     for d in data:
         scores_dict = d['scores']
-        
         for system in scores_dict:
             prediction =  scores_dict[system][]
             subword_probs = torch.tensor(scores_dict[system]['subword_probs']) #(batch size, seq_length, 4)
-            subword_probs = trim_subword_probs(subword_probs, prediction, xcomet_tokenizer)
+            #subword_probs = trim_subword_probs(subword_probs, prediction, xcomet_tokenizer)
             entropy = compute_entropy(subword_probs)
             scores_dict[system]['entropy']=entropy.tolist() #store entropy as a metric to json
         d['scores'] = scores_dict

@@ -3,8 +3,9 @@
 '''
 import json
 
+
 xcometlayer = r'C:\Users\Benjamin Pong\OneDrive\Documents\Machine Translation Metrics\WMT2026\results\xcometmetriclayer.wmt2025esa.cn.result.jsonl'
-xcomet = r'C:\Users\Benjamin Pong\OneDrive\Documents\Machine Translation Metrics\WMT2026\results\xcomet.wmt2025esa.cn.result.jsonl'
+xcomet = r'C:\Users\Benjamin Pong\OneDrive\Documents\Machine Translation Metrics\WMT2026\results\xcomet.wmt2025esa.full.result.redo (1).jsonl'
 
 
 with open(xcometlayer, 'r', encoding='utf-8') as f:
@@ -23,7 +24,7 @@ def summary_stats_per_data(xcometmetriclayer, xcomet):
     print(xcometmetriclayer[0]['scores']['refA'].keys())
 
     print("xcometlayer segment score:", xcometmetriclayer[0]['scores']['refA']['segment_score'])
-    print("xcomet score:", xcomet[0]['scores']['refA']['system_score'])
+  
     print('\n')
     print("xcometlayer error_span:", xcometmetriclayer[0]['scores']['refA']['error_span'])
     print('\n')

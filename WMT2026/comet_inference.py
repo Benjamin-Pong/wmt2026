@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument("--output_file", type=str, required=True, help='path to inference results')
     parser.add_argument("--locale", type=str, required=False, help='initialize specific locale or ALL if running inference on the full corpus.' )
     parser.add_argument("--mode", type=str, required=False, help= 'either write or append to output json file')
-    parser.add_argument('--slice', type=bool,required=False, help="Slice human_eval script from where it ended off" )
+
     return parser.parse_args()
 
 
@@ -52,7 +52,9 @@ def score(human_eval, xcomet, output_file, locale, mode):
         for i, line in enumerate(human_eval):
             human_scores = line['scores']
             src_lang = line['doc_id'].split('_')[0].split('-')[0]
-            tgt_lang = line['doc_id'].split('_')[1].split('-')[0]
+            tgt_lang = line['doc_id'].split('_')[0].split('-')[1]
+            domain = line['doc_id'].split('#')[1].strip('_')
+            doc_id = line['doc_id']
             if locale!='ALL':
                 if src_lang == 'en' and tgt_lang==locale:
                     src_text = line['src_text']
@@ -108,13 +110,15 @@ def score(human_eval, xcomet, output_file, locale, mode):
                 error_spans = model_output.metadata.error_spans
                 logits = model_output.metadata.logits
                 subword_probs = model_output.metadata.subword_probs
+                tokens = model_output.metadata.tokens
+                token_ids = model_output.metadata.token_ids
 
                 for idx, system in enumerate(relevant_text):
                     human_score_per_system = human_scores[system]
                     prediction = relevant_text[system]
-                    scores[system]={'doc_id': line['doc_id'], 'system_id': system, 'prediction':prediction,'segment_score':segment_scores[idx], 'error_span':error_spans[idx], 'logits': logits[idx], 'subword_probs': subword_probs[idx], 'human_score':human_score_per_system}
+                    scores[system]={'system_id': system, 'prediction':prediction,'segment_score':segment_scores[idx], 'error_span':error_spans[idx], 'logits': logits[idx], 'subword_probs': subword_probs[idx], 'tokens': tokens[idx], 'token_ids': token_ids[idx], 'human_score':human_score_per_system}
         
-                res_per_line = {'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'scores': scores}
+                res_per_line = {'doc_id': doc_id, 'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'domain': domain, 'scores': scores}
                 f.write(json.dumps(res_per_line, ensure_ascii=False)+'\n')
                 f.flush()
                 os.fsync(f.fileno())
@@ -139,8 +143,8 @@ if __name__ == "__main__":
     with open(human_eval_file, 'r', encoding='utf-8') as f:
       human_eval = [json.loads(line) for line in f]
 
-    if args.slice:
-        print("slice output file")
+    if args.mode == 'a':
+        print("append mode slice output file")
         with open(output_file, 'r', encoding='utf-8') as g:
             out = [json.loads(line) for line in g]
             last_index = len(out)-1
