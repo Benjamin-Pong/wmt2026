@@ -48,10 +48,11 @@ def extract_values(instance, counters_by_lp):
     domain = instance['domain']
     lp = instance['doc_id'].split('_')[0]
 
-    doc_data = {'doc_id': doc_id,'source_lang': source_lang, 'target_lang': target_lang, 'source_segment': source_text, 'domain': domain}
+    all_system_results_per_jsonl=[]
     
 
     for score in instance['scores'].values():
+        doc_data = {'doc_id': doc_id,'source_lang': source_lang, 'target_lang': target_lang, 'source_segment': source_text, 'domain': domain}
         #doc_id = score['doc_id']
         #doc_data['doc_id']=doc_id
         system_id = score['system_id']
@@ -77,7 +78,9 @@ def extract_values(instance, counters_by_lp):
         doc_data['end_indices']= end_indices
         doc_data['error_types']= error_types
 
-    return doc_data, counters_by_lp
+        all_system_results_per_jsonl.append(doc_data)
+
+    return all_system_results_per_jsonl, counters_by_lp
 
 
 def main(TSV_FIELDS_RELEASE, results_json, output_file_tsv):
@@ -89,9 +92,10 @@ def main(TSV_FIELDS_RELEASE, results_json, output_file_tsv):
     
     counters_by_lp = {}
     for instance in data:
-        doc_data, counters_by_lp_ = extract_values(instance, counters_by_lp)
+        all_system_results_per_jsonl, counters_by_lp_ = extract_values(instance, counters_by_lp)
         counters_by_lp = counters_by_lp_
-        rows.append({field: doc_data.get(field, "") for field in TSV_FIELDS_RELEASE})
+        for doc_data in all_system_results_per_jsonl:
+            rows.append({field: doc_data.get(field, "") for field in TSV_FIELDS_RELEASE})
     
     df = pd.DataFrame(rows, columns=TSV_FIELDS_RELEASE)
     df.to_csv(output_file_tsv, sep='\t', index=False)

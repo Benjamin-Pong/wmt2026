@@ -53,6 +53,9 @@ def test_document_string(human_eval):
 
 def test_size(human, results):
     assert len(human) == len(results)
+
+def test_json_structure():
+    pass
     
 if __name__ == "__main__":
     results=r"C:\Users\Benjamin Pong\OneDrive\Documents\Machine Translation Metrics\WMT2026\results\xcomet.wmt2025esa.full.result.redo.jsonl"
