@@ -107,7 +107,7 @@ def score(human_eval, xcomet, output_file, locale, mode):
             
                     #print (model_output.metadata.error_spans)
             
-                    scores[system]={'doc_id': line['doc_id'], 'system_id': system, 'prediction':prediction,'segment_score':model_output.scores[0], 'system_score':model_output.system_score, 'error_span':model_output.metadata.error_spans[0], 'logits': model_output.metadata.logits, 'subword_probs': model_output.metadata.subword_probs, 'human_score':human_score_per_system}
+                    scores[system]={'doc_id': line['doc_id'], 'system_id': system, 'prediction':prediction,'segment_score':model_output.scores[0], 'system_score':model_output.system_score, 'error_span':model_output.metadata.error_spans[0], 'logits': model_output.metadata.logits, 'subword_probs': model_output.metadata.subword_probs, 'tokens': model_ 'human_score':human_score_per_system}
         
                 res_per_line = {'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'scores': scores}
                 f.write(json.dumps(res_per_line, ensure_ascii=False)+'\n')
