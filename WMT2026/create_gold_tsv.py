@@ -12,8 +12,8 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--results_json', required=True)
-    parser.add_argument('--prediction_tsv', required=True)
+    parser.add_argument('--gold_json', required=True)
+    parser.add_argument('--gold_tsv', required=True)
     return parser.parse_args()
 
 def unpack_error_span(error_spans):
@@ -28,8 +28,8 @@ def unpack_error_span(error_spans):
     end_indices = []
     error_types = []
     for error_span in error_spans:
-        start_indices.append(str(error_span['start']))
-        end_indices.append(str(error_span['end']))
+        start_indices.append(str(error_span['start_i']))
+        end_indices.append(str(error_span['end_i']))
         error_types.append(error_span['severity'])
     
     return ' '.join(start_indices), ' '.join(end_indices), ' '.join(error_types)
@@ -62,11 +62,14 @@ def extract_values(instance, counters_by_lp):
         doc_data['hypothesis_segment']=target_segment
         method = 'ESA'
         doc_data['method']=method
-        overall = float(score['segment_score']) *10
+        #overall = score['segment_score']
+        
+        doc_data['set_id']= 'official'
+        
+        human_score = score['human_score'][0] #extract first annotator's scoring
+        overall=human_score['score']
         doc_data['overall']=overall
-        doc_data['seg_id']= 'official'
-        
-        
+
        
         #lp = score['doc_id'].split('_')[0]
         if lp not in counters_by_lp:
@@ -74,7 +77,7 @@ def extract_values(instance, counters_by_lp):
         segment_id = counters_by_lp[lp]
         counters_by_lp[lp]+=1
 
-        start_indices, end_indices, error_types = unpack_error_span(score['error_span'])
+        start_indices, end_indices, error_types = unpack_error_span(human_score['errors'])
         doc_data['segment_id']= segment_id
         doc_data['start_indices']= start_indices
         doc_data['end_indices']= end_indices
@@ -120,7 +123,7 @@ if __name__ == "__main__":
     "error_types"
 ]
     args = parse_args()
-    main(TSV_FIELDS_RELEASE, args.results_json, args.prediction_tsv)
+    main(TSV_FIELDS_RELEASE, args.gold_json, args.gold_tsv)
 
 
 
