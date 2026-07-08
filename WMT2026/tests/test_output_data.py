@@ -9,8 +9,6 @@ import json
 import torch
 
 
-
-
 def get_systems_evaluated(line):
     return set(line['scores'].keys())
 def score(human_eval):

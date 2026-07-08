@@ -64,7 +64,7 @@ def extract_values(instance, counters_by_lp):
         doc_data['method']=method
         overall = float(score['segment_score']) *10
         doc_data['overall']=overall
-        doc_data['seg_id']= 'official'
+        doc_data['set_id']= 'official'
         
         
        
