@@ -41,5 +41,5 @@ csde_DE_f1: 0.09057
 csde_DE_rec: 0.1471
 csde_DE_prec: 0.06543
 avg_f1: 0.102
-avg_rec: 0.2157
-avg_prec: 0.09998
+avg_prec: 0.2157
+avg_recall: 0.09998

@@ -40,9 +40,9 @@ class XCOMETMetricLayer(XCOMETMetric):
             ):
                 last_n_layers = encoder_out["all_layers"][:]
 
-                #normalize each later
-                normalized_layers = [F.normalize(layer, p=2, dim=-1) for layer in last_n_layers]
-                stacked = torch.stack(normalized_layers, dim=0)
+                #normalize each layer
+                #last_n_layers = [F.normalize(layer, p=2, dim=-1) for layer in last_n_layers]
+                stacked = torch.stack(last_n_layers, dim=0)
                 avg = torch.mean(stacked, dim=0)
                 #wordemb = encoder_out["all_layers"][self.hparams.word_layer]
                 wordemb= avg

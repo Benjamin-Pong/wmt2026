@@ -115,13 +115,13 @@ def main():
         datefmt="%H:%M:%S",
     )
 
-    [_, input_dir, output_dir] = sys.argv
+    [_, input_dir, output_dir, experiment] = sys.argv
     reference_dir = os.path.join(input_dir, "ref")
     submission_dir = os.path.join(input_dir, "res")
-    submission_file_name = "predictions.tsv"
+    #submission_file_name = "predictions.tsv"
 
     predictions_data = pd.read_csv(
-        os.path.join(submission_dir, submission_file_name),
+        os.path.join(submission_dir, experiment),
         sep="\t",
         keep_default_na=False,
     )

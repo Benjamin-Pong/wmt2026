@@ -52,7 +52,7 @@ def extract_values(instance, counters_by_lp):
     
 
     for score in instance['scores'].values():
-        doc_data = {'doc_id': doc_id,'source_lang': source_lang, 'target_lang': target_lang,  'source_segment': source_text, 'domain': domain}
+        doc_data = {'doc_id': doc_id,'source_lang': source_lang, 'target_lang': target_lang,  'source_segment': source_text, 'domain_name': domain}
         
         #doc_id = score['doc_id']
         #doc_data['doc_id']=doc_id
@@ -78,7 +78,10 @@ def extract_values(instance, counters_by_lp):
         doc_data['segment_id']= segment_id
         doc_data['start_indices']= start_indices
         doc_data['end_indices']= end_indices
-        doc_data['error_types']= error_types
+        if error_types:
+            doc_data['error_types']= error_types
+        else:
+            doc_data['error_types'] = 'no-error'
 
         all_system_results_per_jsonl.append(doc_data)
 

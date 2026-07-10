@@ -41,5 +41,5 @@ enzh_CN_f1: 0.0718
 enzh_CN_rec: 0.2577
 enzh_CN_prec: 0.04171
 avg_f1: 0.1434
-avg_rec: 0.2096
-avg_prec: 0.1954
+avg_prec: 0.2096
+avg_rec: 0.1954
