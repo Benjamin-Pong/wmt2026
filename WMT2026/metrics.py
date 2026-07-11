@@ -1,5 +1,5 @@
 '''
-This script computes the metrics for statistical analysis and evaluation of outcome
+This script computes the metrics for statistical analysis and callibration
 Different levels of evaluation: Correlation between confidence and entrop
 '''
 
@@ -39,7 +39,8 @@ def compute_continuous(subword_probs):
     continuous_metric = (1- subword_probs[:,:,:, -3:].sum(axis=-1)).T
     return continuous_metric
 
-    
+
+def compute_weighted_logits(logits)
 
 def main(data, output, xcomet_tokenizer):
     '''
@@ -49,11 +50,14 @@ def main(data, output, xcomet_tokenizer):
     for d in data:
         scores_dict = d['scores']
         for system in scores_dict:
-            prediction =  scores_dict[system][]
+            #prediction =  scores_dict[system][]
             subword_probs = torch.tensor(scores_dict[system]['subword_probs']) #(batch size, seq_length, 4)
-            #subword_probs = trim_subword_probs(subword_probs, prediction, xcomet_tokenizer)
+            bias_corrected_logits = torch.tensor(scores_dict[system]['logits'])
             entropy = compute_entropy(subword_probs)
             scores_dict[system]['entropy']=entropy.tolist() #store entropy as a metric to json
+            continuous = compute_continuous(subword_probs)
+            continuous[system]['continuous']=continuous
+
         d['scores'] = scores_dict
         output.write(json.dumps(d)+'\n')
     pass
@@ -61,7 +65,7 @@ if __name__ == '__main__':
     model_path = download_model("Unbabel/XCOMET-XL")
     
     xcomet = load_from_checkpoint(model_path)
-    xcomet_tokenizer = xcomet.encoder.tokenizer
+    #xcomet_tokenizer = xcomet.encoder.tokenizer
     main()
     
 
