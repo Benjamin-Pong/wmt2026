@@ -14,3 +14,5 @@ def test_entropy():
     data_entropy = td.Categorical(data)
     data_entropy = data_entropy.entropy()
     assert data_entropy == torch.tensor([[], []])
+
+
