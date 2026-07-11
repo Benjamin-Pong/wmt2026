@@ -3,3 +3,7 @@ WMT2026/.env
 WMT2026/wmt25-genmt-humeval.jsonl 
 papers 
 WMT2026/results
+WMT2026/bare_base 
+WMT2026/bare_layerwise 
+WMT2026/input 
+WMT2026/output 
