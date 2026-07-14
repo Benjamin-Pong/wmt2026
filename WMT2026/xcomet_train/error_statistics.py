@@ -48,6 +48,13 @@ def reprocess_indicMT(indic_dir, res):
             line['annotations']=annotations
             res.write(json.dumps(line, ensure_ascii=False)+'\n')
             res.flush()
+def reprocess_wmt(wmt_json, res):
+    with open(wmt_json, 'r', encoding='utf-8') as f:
+        data = [json.loads(line) for line in f]
+    with open(res, 'w', encoding='utf-8') as r:
+        for d in data:
+            res.write(json.dumps(d)+'\n')
+
             
 
     
