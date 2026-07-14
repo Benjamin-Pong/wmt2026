@@ -23,6 +23,12 @@ def load_results_json(): #just need to test 1 json
         results = [json.loads(line) for line in f]
     return results
 
+@pytest.fixture
+def load_updated_metrics_json():
+    results=r"C:\Users\Benjamin Pong\OneDrive\Documents\Machine Translation Metrics\WMT2026\results\metrics\xcomet.wmt2025esa.full.result.updated.jsonl"
+    with open(results, 'r', encoding='utf-8') as f:
+        results = [json.loads(line) for line in f]
+    return results
 
 '''
 def get_systems_evaluated(line):
@@ -78,5 +84,14 @@ def test_size(load_gold_json, load_results_json):
 
 def test_json_structure():
     pass
+
+def test_updated_metrics_fields(load_updated_metrics_json):
+    '''
+    tests that json contains the additional metrics fields computed.
+    '''
+    error_span_data = load_updated_metrics_json[-1]['scores']['refA']['error_span']
+    assert 'span_entropy' in error_span_data.keys()
+
+
 
     

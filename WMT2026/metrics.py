@@ -41,9 +41,9 @@ def compute_all_span_entropy(subword_probs, error_span):
     for curr_span in error_span:
         print(curr_span)
         print(curr_span.keys())
-        curr_span_probs = subword_probs[:, curr_span['start']:curr_span['end'], :]
+        curr_span_probs = subword_probs[curr_span['start']:curr_span['end'], :]
         curr_span_entropy = compute_shannon_entropy(curr_span_probs)
-        curr_span['span_entropy'] = curr_span_entropy
+        curr_span['span_entropy'] = curr_span_entropy.tolist()
         updated_error_span.append(curr_span)
     return updated_error_span
 
@@ -58,26 +58,25 @@ def main(data, output):
     '''
     with open(data, 'r', encoding='utf-8') as f:
         data = [json.loads(line) for line in f]
-    for d in data:
-        scores_dict = d['scores']
-        for system in scores_dict:
-            #prediction =  scores_dict[system][]
-            
-            subword_probs = torch.tensor(scores_dict[system]['subword_probs']) #(batch size, seq_length, 4)
-            bias_corrected_logits = torch.tensor(scores_dict[system]['logits'])
-            entropy = compute_subword_entropy(subword_probs)
-            scores_dict[system]['subword_entropy']=entropy.tolist() #store entropy as a metric to json
+    with open(output, 'w', encoding='utf-8') as o:
+        for d in data:
+            scores_dict = d['scores']
+            for system in scores_dict:
+                #prediction =  scores_dict[system][]
+                
+                subword_probs = torch.tensor(scores_dict[system]['subword_probs']) #(batch size, seq_length, 4)
+                bias_corrected_logits = torch.tensor(scores_dict[system]['logits'])
+                entropy = compute_subword_entropy(subword_probs)
+                scores_dict[system]['subword_entropy']=entropy.tolist() #store entropy as a metric to json
 
-            continuous = compute_continuous(subword_probs)
-            scores_dict[system]['continuous']=continuous
+                continuous = compute_continuous(subword_probs)
+                scores_dict[system]['continuous']=continuous.tolist()
 
-            error_span = scores_dict[system]['error_span']
-            updated_error_span_with_span_entropy = compute_all_span_entropy(subword_probs, error_span)
-            scores_dict[system]['error_span'] = updated_error_span_with_span_entropy
-
-
-        d['scores'] = scores_dict
-        output.write(json.dumps(d)+'\n')
+                error_span = scores_dict[system]['error_span']
+                updated_error_span_with_span_entropy = compute_all_span_entropy(subword_probs, error_span)
+                scores_dict[system]['error_span'] = updated_error_span_with_span_entropy
+            d['scores'] = scores_dict
+            o.write(json.dumps(d)+'\n')
     
 if __name__ == '__main__':
     args = parse_args()
