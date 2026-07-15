@@ -10,7 +10,7 @@ def parse_args():
     parser.add_argument('--error_statistics', help='output txt file containing error statistics')
     return parser.parse_args()
 
-def process_annotations(json_line, xcomet_tokenizer, global_subword_label_distribution, lang_subword_label_distribution):
+def process_annotations(json_line, xcomet_tokenizer, global_subword_label_distribution:Dict, lang_subword_label_distribution:Dict[Dict], global_length:int, lang_length:Dict):
     lp = json_line['lp']
     annotations:List[Dict] = json_line['annotations']
     mt_sent:str = json_line['mt']
@@ -21,16 +21,33 @@ def process_annotations(json_line, xcomet_tokenizer, global_subword_label_distri
     labels = xcomet_tokenizer.subword_tokenize(encoder_input[0], annotations) #encoder_input[0] extracts the Encoding object for the sole sentence
     labels:List[List] = labels['input_labels']
     label_list = labels[0]
+    print(label_list)
     '''
     how to compute label distribution?
     Two  ways:
     1. Global: Counter()
     2. Language-pair level {'en':Counter()..}
+
+    denominator:
+    1. Compute the total number of sub_tokens at the global level
+    2. Compute total number of sub_tokens at the lp level
     '''
     global_subword_label_distribution.update(label_list)
     lang_subword_label_distribution[lp].update(label_list)
+    length_subword_tokens = len(label_list)
+    global_length+=length_subword_tokens
+    lang_length[lp]+=length_subword_tokens
 
-    return global_subword_label_distribution, lang_subword_label_distribution
+    return global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length
+
+
+
+def error_statistics(global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length):
+    for label in global_subword_label_distribution:
+        continue
+    pass
+
+
 
 if __name__ == "__main__":
     args = parse_args()
@@ -40,12 +57,14 @@ if __name__ == "__main__":
 
     global_subword_label_distribution = Counter()
     lang_subword_label_distribution = defaultdict(Counter)
+    lang_length = defaultdict(int)
+    global_length = 0
 
     with open(args.input, 'r', encoding='utf-8') as f:
         data = [json.loads(line) for line in f]
 
     for d in data[0:2]:
-        global_subword_label_distribution, lang_subword_label_distribution = process_annotations(d, xcomet_tokenizer, global_subword_label_distribution, lang_subword_label_distribution)
+        global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length = process_annotations(d, xcomet_tokenizer, global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length)
         
     
     print(global_subword_label_distribution)

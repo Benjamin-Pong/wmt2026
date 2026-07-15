@@ -129,7 +129,7 @@ if __name__ == "__main__":
     args = parse_args()
     model_path = download_model("Unbabel/XCOMET-XL")
     if args.model:
-        model = globals()[args.model]
+        model = globals()[args.model] #maps model's string name to model object
         print(f"model experiment: {model}")
         xcomet = model.load_from_checkpoint(model_path, strict=False)
         print(inspect.getfile(type(xcomet))) #prints path to custom xcomet
