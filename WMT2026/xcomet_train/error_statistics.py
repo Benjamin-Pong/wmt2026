@@ -3,6 +3,10 @@ import json
 from comet import download_model, load_from_checkpoint
 from typing import List, Dict, Optional, Tuple
 from collections import Counter, defaultdict
+from pathlib import Path
+from dotenv import load_dotenv
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -10,7 +14,7 @@ def parse_args():
     parser.add_argument('--error_statistics', help='output txt file containing error statistics')
     return parser.parse_args()
 
-def process_annotations(json_line, xcomet_tokenizer, global_subword_label_distribution:Dict, lang_subword_label_distribution:Dict[Dict], global_length:int, lang_length:Dict):
+def process_annotations(json_line, xcomet_tokenizer, global_subword_label_distribution:Dict, lang_subword_label_distribution:Dict[str, Dict[str, int]], global_length:int, lang_length:Dict[str, Dict[str,int]]):
     lp = json_line['lp']
     annotations:List[Dict] = json_line['annotations']
     mt_sent:str = json_line['mt']
