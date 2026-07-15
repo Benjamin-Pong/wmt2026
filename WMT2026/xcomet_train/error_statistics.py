@@ -1,12 +1,14 @@
 import argparse
 import json
+from dotenv import load_dotenv
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
 from comet import download_model, load_from_checkpoint
 from typing import List, Dict, Optional, Tuple
 from collections import Counter, defaultdict
 from pathlib import Path
-from dotenv import load_dotenv
-env_path = Path(__file__).resolve().parent / ".env"
-load_dotenv(dotenv_path=env_path)
+
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
