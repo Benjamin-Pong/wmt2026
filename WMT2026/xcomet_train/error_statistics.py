@@ -10,10 +10,11 @@ def parse_args():
     parser.add_argument('--error_statistics', help='output txt file containing error statistics')
     return parser.parse_args()
 
-def process_annotations(json_line, xcomet_tokenizer, subword_label_distribution):
+def process_annotations(json_line, xcomet_tokenizer, global_subword_label_distribution, lang_subword_label_distribution):
+    lp = json_line['lp']
     annotations:List[Dict] = json_line['annotations']
     mt_sent:str = json_line['mt']
-    encoder_input = xcomet_tokenizer([mt_sent], #what is sample?
+    encoder_input = xcomet_tokenizer([mt_sent], #what is the input sample? - a list of strings
             truncation=True,
             max_length=xcomet_tokenizer.max_positions - 2) #encoder_input is an Encoding object of Huggingface Transformers Tokenizers
     
@@ -24,10 +25,12 @@ def process_annotations(json_line, xcomet_tokenizer, subword_label_distribution)
     how to compute label distribution?
     Two  ways:
     1. Global: Counter()
-    2. Language level {'en':Counter()..}
+    2. Language-pair level {'en':Counter()..}
     '''
+    global_subword_label_distribution.update(label_list)
+    lang_subword_label_distribution[lp].update(label_list)
 
-    return subword_label_distribution
+    return global_subword_label_distribution, lang_subword_label_distribution
 
 if __name__ == "__main__":
     args = parse_args()
@@ -35,10 +38,14 @@ if __name__ == "__main__":
     model = load_from_checkpoint(model_path)
     xcomet_tokenizer = model.encoder.tokenizer
 
-    subword_label_distribution = Counter()
+    global_subword_label_distribution = Counter()
+    lang_subword_label_distribution = defaultdict(Counter)
 
     with open(args.input, 'r', encoding='utf-8') as f:
         data = [json.loads(line) for line in f]
 
-    for d in data:
-        process_annotations(d, xcomet_tokenizer, subword_label_distribution)
+    for d in data[0:2]:
+        global_subword_label_distribution, lang_subword_label_distribution = process_annotations(d, xcomet_tokenizer, global_subword_label_distribution, lang_subword_label_distribution)
+        
+    
+    print(global_subword_label_distribution)
