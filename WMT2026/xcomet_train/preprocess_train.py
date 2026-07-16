@@ -77,7 +77,7 @@ def reprocess_demetr(demtr_dir, res):
             if severity == "base":
                 annotations=[]
             else:
-                annotations= [{'start': tup[0], 'end':tup[1],'severity':severity} for tup in list_error_span]
+                annotations= [{'start': int(tup[0]), 'end':int(tup[1]),'severity':severity} for tup in list_error_span]
 
             curr_res = {'src': d['src_sent'], 'mt': d['pert_sent'], 'ref': d['mt_sent'], 'annotations': annotations, 'lp':lp}
             res.write(json.dumps(curr_res, ensure_ascii=False) + '\n')

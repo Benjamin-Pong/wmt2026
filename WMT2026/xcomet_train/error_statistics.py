@@ -27,11 +27,12 @@ def process_annotations(json_line, xcomet_encoder, global_subword_label_distribu
     lp = json_line['lp']
     annotations:List[Dict] = json_line['annotations']
     mt_sent:str = json_line['mt']
+    ''''
     encoder_input = xcomet_encoder.tokenizer([mt_sent], #what is the input sample? - a list of strings
             truncation=True,
             max_length=xcomet_encoder.max_positions - 2) #encoder_input is an Encoding object of Huggingface Transformers Tokenizers
-    
-    labels = xcomet_encoder.subword_tokenize(encoder_input[0], annotations) #encoder_input[0] extracts the Encoding object for the sole sentence
+    '''
+    labels = xcomet_encoder.subword_tokenize([mt_sent], annotations) #encoder_input[0] extracts the Encoding object for the sole sentence
     labels:List[List] = labels['input_labels']
     label_list = labels[0]
     print(label_list)
@@ -76,6 +77,13 @@ if __name__ == "__main__":
 
     with open(args.input, 'r', encoding='utf-8') as f:
         data = [json.loads(line) for line in f]
+        #type cast all start and end indices to integers, some are strings
+        udata = []
+        for d in data:
+            d['start']=int(d['start'])
+            d['start']=int(d['start'])
+            udata.append(udata)
+        data=udata
 
     for d in data[0:2]:
         global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length = process_annotations(d, xcomet_encoder, global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length)
