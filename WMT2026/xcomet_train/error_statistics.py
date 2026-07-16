@@ -2,12 +2,18 @@ import argparse
 import json
 from dotenv import load_dotenv
 from pathlib import Path
-env_path = Path(__file__).resolve().parent / ".env"
+env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 from comet import download_model, load_from_checkpoint
 from typing import List, Dict, Optional, Tuple
 from collections import Counter, defaultdict
+import os
+from huggingface_hub import whoami, get_token
 
+print(load_dotenv(dotenv_path=env_path))   # False => file not found
+print(repr(os.environ.get("HF_TOKEN"))[:12], "...")  # None => wrong var name
+print(get_token())                          # what hub actually sees
+print(whoami())                             # which account, or error
 
 
 
