@@ -23,15 +23,15 @@ def parse_args():
     parser.add_argument('--error_statistics', help='output txt file containing error statistics')
     return parser.parse_args()
 
-def process_annotations(json_line, xcomet_tokenizer, global_subword_label_distribution:Dict, lang_subword_label_distribution:Dict[str, Dict[str, int]], global_length:int, lang_length:Dict[str, Dict[str,int]]):
+def process_annotations(json_line, xcomet_encoder, global_subword_label_distribution:Dict, lang_subword_label_distribution:Dict[str, Dict[str, int]], global_length:int, lang_length:Dict[str, Dict[str,int]]):
     lp = json_line['lp']
     annotations:List[Dict] = json_line['annotations']
     mt_sent:str = json_line['mt']
-    encoder_input = xcomet_tokenizer([mt_sent], #what is the input sample? - a list of strings
+    encoder_input = xcomet_encoder.tokenizer([mt_sent], #what is the input sample? - a list of strings
             truncation=True,
-            max_length=xcomet_tokenizer.max_positions - 2) #encoder_input is an Encoding object of Huggingface Transformers Tokenizers
+            max_length=xcomet_encoder.max_positions - 2) #encoder_input is an Encoding object of Huggingface Transformers Tokenizers
     
-    labels = xcomet_tokenizer.subword_tokenize(encoder_input[0], annotations) #encoder_input[0] extracts the Encoding object for the sole sentence
+    labels = xcomet_encoder.tokenizer.subword_tokenize(encoder_input[0], annotations) #encoder_input[0] extracts the Encoding object for the sole sentence
     labels:List[List] = labels['input_labels']
     label_list = labels[0]
     print(label_list)
@@ -66,7 +66,8 @@ if __name__ == "__main__":
     args = parse_args()
     model_path = download_model("Unbabel/XCOMET-XL")
     model = load_from_checkpoint(model_path)
-    xcomet_tokenizer = model.encoder.tokenizer
+    #xcomet_tokenizer = model.encoder.tokenizer
+    xcomet_encoder = model.encoder
 
     global_subword_label_distribution = Counter()
     lang_subword_label_distribution = defaultdict(Counter)
@@ -77,7 +78,7 @@ if __name__ == "__main__":
         data = [json.loads(line) for line in f]
 
     for d in data[0:2]:
-        global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length = process_annotations(d, xcomet_tokenizer, global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length)
+        global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length = process_annotations(d, xcomet_encoder, global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length)
         
     
     print(global_subword_label_distribution)
