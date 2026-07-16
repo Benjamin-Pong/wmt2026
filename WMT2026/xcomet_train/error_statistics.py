@@ -41,6 +41,7 @@ def process_annotations(json_line, xcomet_encoder, global_subword_label_distribu
     print("labels", labels)
     labels = labels['label_ids']
     label_list = list(labels[0])
+    label_list = [int(t) for t in label_list]
     print(label_list)
     '''
     how to compute label distribution?
