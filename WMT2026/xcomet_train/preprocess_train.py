@@ -37,7 +37,7 @@ def reprocess_indicMT(indic_dir, res):
         with open(file_path, "r", encoding="utf-8") as f:
             curr_file_data = [json.loads(line) for line in f]
         
-        rename_keys = {'completion':'annotations', 'span_start_offset':'start', 'span_end_offset':'end', 'span_severity':'severity'}
+        rename_keys = {'completion':'annotations', 'translation': 'mt','span_start_offset':'start', 'span_end_offset':'end', 'span_severity':'severity'}
 
         for line in curr_file_data:
             line = {rename_keys.get(k, k): v for k, v in line.items()}
@@ -46,7 +46,8 @@ def reprocess_indicMT(indic_dir, res):
             renamed_annotations=[]
             for annotation in annotations:
                 renamed_annotation={rename_keys.get(k,k):v for k,v in annotation.items()}
-                renamed_annotations.append(renamed_annotation)
+                if renamed_annotation['start'] and renamed_annotation['end']:
+                    renamed_annotations.append(renamed_annotation)
             
             annotations = renamed_annotations
             line['annotations']=annotations

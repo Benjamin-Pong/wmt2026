@@ -78,12 +78,14 @@ if __name__ == "__main__":
     with open(args.input, 'r', encoding='utf-8') as f:
         data = [json.loads(line) for line in f]
         #type cast all start and end indices to integers, some are strings
-        udata = []
+        #udata = []
         for d in data:
-            d['start']=int(d['start'])
-            d['start']=int(d['start'])
-            udata.append(udata)
-        data=udata
+            if d['annotations']!=[]: #edge case, no error
+                for error_span in d['annotations']:
+                    for field in ("start", "end"):
+                        error_span[field]=int(error_span[field])
+            #udata.append(d)
+        #data=udata
 
     for d in data[0:2]:
         global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length = process_annotations(d, xcomet_encoder, global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length)
