@@ -39,8 +39,8 @@ def process_annotations(json_line, xcomet_encoder, global_subword_label_distribu
 
     labels = xcomet_encoder.subword_tokenize([mt_sent], [annotations]) #encoder_input[0] extracts the Encoding object for the sole sentence
     print("labels", labels)
-    labels:List[List] = labels['input_labels']
-    label_list = labels[0]
+    labels = labels['label_ids']
+    label_list = list(labels[0])
     print(label_list)
     '''
     how to compute label distribution?
@@ -101,3 +101,6 @@ if __name__ == "__main__":
         
     
     print(global_subword_label_distribution)
+    print(lang_subword_label_distribution)
+    print(global_length)
+    print(lang_length)
