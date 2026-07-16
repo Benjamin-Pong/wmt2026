@@ -9,3 +9,13 @@ a = 'there is a boy'
 b = 'there is a bo'
 
 print(diff_spans(b,a))
+
+
+d={'src': 'hello', 'annotations':[{'start': '1', 'end':'2'}]}
+print(type(d['annotations'][0]['start']))
+for error_span in d['annotations']:
+    for field in ('start', 'end'):
+        error_span['start'] = int(error_span['start'])
+
+print(type(d['annotations'][0]['start']))
+
