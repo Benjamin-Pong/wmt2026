@@ -20,7 +20,7 @@ print(whoami())                             # which account, or error
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', required=True, help='path to combined training set json')
-    parser.add_argument('--error_statistics', help='output txt file containing error statistics')
+    parser.add_argument('--output', help='output txt file containing error statistics')
     return parser.parse_args()
 
 def process_annotations(json_line, xcomet_encoder, global_subword_label_distribution:Dict, lang_subword_label_distribution:Dict[str, Dict[str, int]], global_length:int, lang_length:Dict[str, Dict[str,int]]):
@@ -63,10 +63,21 @@ def process_annotations(json_line, xcomet_encoder, global_subword_label_distribu
 
 
 
-def error_statistics(global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length):
-    for label in global_subword_label_distribution:
-        continue
-    pass
+def error_statistics(global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length, output):
+    with open(output, 'w', encoding='utf-8'):
+        output.write("# Global Error Statistics:"+ '\n')
+
+        id_to_label = {0: 'no-error', 1:'minor', 2:'major', 3:'critical'}
+        for label in global_subword_label_distribution:
+            output.write(f'{id_to_label[label]} {global_subword_label_distribution[label]/global_length}' + '\n')
+        
+        output.write('# Lang-pair Error statistics')
+        for lp in lang_subword_label_distribution:
+            output.write(f'{lp}' + '\t')
+            curr_lp_counter = lang_subword_label_distribution[lp]
+            curr_lp_len = lang_length[lp]
+            for label in curr_lp_counter:
+                 output.write(f'{id_to_label[label]} {curr_lp_counter[label]/curr_lp_len}' + '\n')
 
 
 
@@ -97,11 +108,14 @@ if __name__ == "__main__":
         #data=udata
 
 
-    for d in data[0:2]:
+    for d in data:
         global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length = process_annotations(d, xcomet_encoder, global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length)
-        
     
+    error_statistics(global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length, args.output)
+        
+    '''
     print(global_subword_label_distribution)
     print(lang_subword_label_distribution)
     print(global_length)
     print(lang_length)
+    '''
