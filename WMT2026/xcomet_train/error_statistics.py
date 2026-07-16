@@ -38,6 +38,7 @@ def process_annotations(json_line, xcomet_encoder, global_subword_label_distribu
     print(type(annotations[0]['start']))
 
     labels = xcomet_encoder.subword_tokenize([mt_sent], [annotations]) #encoder_input[0] extracts the Encoding object for the sole sentence
+    print("labels", labels)
     labels:List[List] = labels['input_labels']
     label_list = labels[0]
     print(label_list)
