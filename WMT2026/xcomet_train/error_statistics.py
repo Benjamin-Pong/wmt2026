@@ -31,7 +31,7 @@ def process_annotations(json_line, xcomet_encoder, global_subword_label_distribu
             truncation=True,
             max_length=xcomet_encoder.max_positions - 2) #encoder_input is an Encoding object of Huggingface Transformers Tokenizers
     
-    labels = xcomet_encoder.tokenizer.subword_tokenize(encoder_input[0], annotations) #encoder_input[0] extracts the Encoding object for the sole sentence
+    labels = xcomet_encoder.subword_tokenize(encoder_input[0], annotations) #encoder_input[0] extracts the Encoding object for the sole sentence
     labels:List[List] = labels['input_labels']
     label_list = labels[0]
     print(label_list)
