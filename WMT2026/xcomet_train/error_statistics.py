@@ -64,20 +64,20 @@ def process_annotations(json_line, xcomet_encoder, global_subword_label_distribu
 
 
 def error_statistics(global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length, output):
-    with open(output, 'w', encoding='utf-8'):
-        output.write("# Global Error Statistics:"+ '\n')
+    with open(output, 'w', encoding='utf-8') as f:
+        f.write("# Global Error Statistics:"+ '\n')
 
         id_to_label = {0: 'no-error', 1:'minor', 2:'major', 3:'critical'}
         for label in global_subword_label_distribution:
-            output.write(f'{id_to_label[label]} {global_subword_label_distribution[label]/global_length}' + '\n')
+            f.write(f'{id_to_label[label]} {global_subword_label_distribution[label]/global_length}' + '\n')
         
-        output.write('# Lang-pair Error statistics')
+        f.write('# Lang-pair Error statistics'+ '\n')
         for lp in lang_subword_label_distribution:
-            output.write(f'{lp}' + '\t')
+            f.write(f'{lp}' + '\t')
             curr_lp_counter = lang_subword_label_distribution[lp]
             curr_lp_len = lang_length[lp]
             for label in curr_lp_counter:
-                 output.write(f'{id_to_label[label]} {curr_lp_counter[label]/curr_lp_len}' + '\n')
+                f.write(f'{id_to_label[label]} {curr_lp_counter[label]/curr_lp_len}' + '\n')
 
 
 
@@ -106,7 +106,6 @@ if __name__ == "__main__":
                   
             #udata.append(d)
         #data=udata
-
 
     for d in data:
         global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length = process_annotations(d, xcomet_encoder, global_subword_label_distribution, lang_subword_label_distribution, global_length, lang_length)
