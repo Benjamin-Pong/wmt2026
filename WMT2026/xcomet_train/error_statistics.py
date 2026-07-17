@@ -34,8 +34,8 @@ def process_annotations(json_line, xcomet_encoder, global_subword_label_distribu
     '''
     print("annotations", annotations)
     print(type(annotations)) #list
-    print(type(annotations[0])) #dict
-    print(type(annotations[0]['start']))
+    #print(type(annotations[0])) #dict
+    #print(type(annotations[0]['start']))
 
     labels = xcomet_encoder.subword_tokenize([mt_sent], [annotations]) #encoder_input[0] extracts the Encoding object for the sole sentence
     print("labels", labels)

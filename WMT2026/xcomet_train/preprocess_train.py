@@ -38,6 +38,8 @@ def reprocess_indicMT(indic_dir, res):
             curr_file_data = [json.loads(line) for line in f]
         
         rename_keys = {'completion':'annotations', 'translation': 'mt','span_start_offset':'start', 'span_end_offset':'end', 'span_severity':'severity'}
+        rename_class_labels = {'Low': 'minor', 'Very Low': 'minor', 'Medium': 'major', 'High': 'major', 'Very High': 'critical' }
+        
 
         for line in curr_file_data:
             line = {rename_keys.get(k, k): v for k, v in line.items()}
@@ -46,6 +48,11 @@ def reprocess_indicMT(indic_dir, res):
             renamed_annotations=[]
             for annotation in annotations:
                 renamed_annotation={rename_keys.get(k,k):v for k,v in annotation.items()}
+                if renamed_annotation['severity']=='Default':
+                    continue #remove the entire span if Default is the severity label, simply do not append
+                severity = renamed_annotation['severity']
+                renamed_annotation['severity'] = rename_class_labels[severity]
+               
                 if renamed_annotation['start'] and renamed_annotation['end']:
                     renamed_annotations.append(renamed_annotation)
             
