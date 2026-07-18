@@ -164,7 +164,8 @@ class XCOMETMetricLogitsAdj(UnifiedMetric):
             scores = (torch.tensor(scores) * -1 + 25) / 25
             return scores
         def logits_adjustment(logits:torch.Tensor):
-            return logits - torch.log(self.global_error_stats)
+            global_error_stats = self.global_error_stats.to(logits.device)
+            return logits - torch.log(global_error_stats)
         
         def trim(subwords:torch.Tensor, logits:torch.Tensor, mt_offsets:torch.Tensor, input_ids:torch.Tensor, tokenizer):
             '''
