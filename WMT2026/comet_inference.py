@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from comet import download_model, load_from_checkpoint
 from comet.models.multitask.xcomet_layerwise_metric import XCOMETMetricLayer
 from comet.models.multitask.xcomet_continuous_metric import XCOMETContinuousMetric
+from comet.models.multitask.xcomet_logits_offset import XCOMETMetricLogitsAdj
 import os
 from huggingface_hub import whoami
 import json

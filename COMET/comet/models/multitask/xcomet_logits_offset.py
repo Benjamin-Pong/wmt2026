@@ -254,7 +254,7 @@ class XCOMETMetricLogitsAdj(UnifiedMetric):
                 :, :seq_len, :
             ]
 
-            ladjusted_logits_global = model_output.logits[:, :seq_len, :]
+            adjusted_logits_global = model_output.logits[:, :seq_len, :]
             
             trimmed_subwords, trimmed_logits, t_tokens, token_ids = trim(subword_probs, adjusted_logits_global, mt_offsets, input_ids, self.encoder.tokenizer)
             error_spans = self.decode(
