@@ -174,10 +174,10 @@ class Encoder(nn.Module, metaclass=abc.ABCMeta):
         )
         input_ids, offsets, label_ids = [], [], []
         for i in range(len(sample)):
-            tokenized_text, sent_annot = encoder_input[i], annotations[i]
+            tokenized_text, sent_annot = encoder_input[i], annotations[i] # annotations = list of lists
             input_ids.append(tokenized_text.ids)
             label_ids.append(
-                self.align_tokens_and_annotations(tokenized_text, sent_annot)
+                self.align_tokens_and_annotations(tokenized_text, sent_annot) #semt_annot = list of dict
             )
             offsets.append(tokenized_text.offsets)
 

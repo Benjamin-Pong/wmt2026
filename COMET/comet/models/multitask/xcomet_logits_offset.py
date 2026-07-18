@@ -30,7 +30,7 @@ from comet.models.utils import Prediction
 from comet.modules import FeedForward
 
 
-class XCOMETMetric(UnifiedMetric):
+class XCOMETMetricLogitsAdj(UnifiedMetric):
     """eXplainable COMET is same has Unified Metric but overwrites predict function.
     This way we can control better for the models inference.
 
@@ -117,6 +117,9 @@ class XCOMETMetric(UnifiedMetric):
         # This is None by default and we will use argmax during decoding yet, to control over
         # precision and recall we can set it to another value.
         self.decoding_threshold = None
+        self.global_error_stats = torch.tensor([0.8838,  0.0534, 0.0566, 0.0061])
+
+
 
         self.init_losses()
         self.save_hyperparameters()
@@ -160,6 +163,9 @@ class XCOMETMetric(UnifiedMetric):
             # Rescale between 0 and 1
             scores = (torch.tensor(scores) * -1 + 25) / 25
             return scores
+        def logits_adjustment(logits:torch.Tensor):
+            return logits - torch.log(self.global_error_stats)
+        
         def trim(subwords:torch.Tensor, logits:torch.Tensor, mt_offsets:torch.Tensor, input_ids:torch.Tensor, tokenizer):
             '''
             helper function that trims subword_probs,logits, and the actual tokens for qualitative inspection
@@ -203,9 +209,8 @@ class XCOMETMetric(UnifiedMetric):
             seq_len = mt_length.max()
 
             # Weighted average of the softmax probs along the different inputs.
-            '''
-            Compute logits adjustments here
-            '''
+            
+
             subword_probs = [
                 nn.functional.softmax(o.logits, dim=2)[:, :seq_len, :] * w
                 for w, o in zip(self.input_weights_spans, predictions)
@@ -244,11 +249,14 @@ class XCOMETMetric(UnifiedMetric):
             seq_len = mt_length.max()
             mt_offsets = batch[0]["mt_offsets"]
             input_ids = batch[0]["input_ids"]
-            subword_probs = nn.functional.softmax(model_output.logits, dim=2)[
+            adjusted_logits_global = logits_adjustment(model_output.logits.clone())
+            subword_probs = nn.functional.softmax(adjusted_logits_global, dim=2)[
                 :, :seq_len, :
             ]
-            logits = model_output.logits[:, :seq_len, :]
-            trimmed_subwords, trimmed_logits, t_tokens, token_ids = trim(subword_probs, logits, mt_offsets, input_ids, self.encoder.tokenizer)
+
+            ladjusted_logits_global = model_output.logits[:, :seq_len, :]
+            
+            trimmed_subwords, trimmed_logits, t_tokens, token_ids = trim(subword_probs, adjusted_logits_global, mt_offsets, input_ids, self.encoder.tokenizer)
             error_spans = self.decode(
                 subword_probs, batch[0]["input_ids"], batch[0]["mt_offsets"]
             )

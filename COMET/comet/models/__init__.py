@@ -26,6 +26,7 @@ from .multitask.unified_metric import UnifiedMetric
 from .multitask.xcomet_continuous_metric import XCOMETContinuousMetric
 from .multitask.xcomet_layerwise_metric import XCOMETMetricLayer
 from .multitask.xcomet_metric import XCOMETMetric
+from .multitask.xcomet_logits_offset import XCOMETMetricLogitsAdj
 from .ranking.ranking_metric import RankingMetric
 from .regression.referenceless import ReferencelessRegression
 from .regression.regression_metric import RegressionMetric
@@ -39,7 +40,8 @@ str2model = {
     "unified_metric": UnifiedMetric,
     "xcomet_metric": XCOMETMetric,
     "xcomet_continuous_metric": XCOMETContinuousMetric,
-    "xcomet_layerwise_metric": XCOMETMetricLayer
+    "xcomet_layerwise_metric": XCOMETMetricLayer,
+    "xcomet_logits_offset" : XCOMETMetricLogitsAdj
 }
 
 
