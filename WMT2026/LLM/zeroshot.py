@@ -18,9 +18,6 @@ def parse_args():
 def get_systems_evaluated(line):
     return set(line['scores'].keys())
 
-def predict():
-    pass
-
 def inference(target_language, source_language, target_segment, source_segment) -> List[Dict]:
     prompt = '''You are an annotator for the quality of machine translation. Your task is to identify
         errors and assess the quality of the translation.
@@ -39,7 +36,13 @@ def inference(target_language, source_language, target_segment, source_segment) 
         Each error is classified as one of three categories: critical, major, and minor.
         Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
         the text is trying to say is still understandable. Minor errors are technically errors,
-        but do not disrupt the flow or hinder comprehension.'''
+        but do not disrupt the flow or hinder comprehension.
+
+        Produce a JSON array of objects. Each object represents a single error and
+        must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+        "critical", "major", or "minor". If there are no errors, return an empty array [].
+        Output only the JSON array, with no other text.
+        '''
     messages = [
     {"role": "user", "content": f"{prompt}"},
     ]
@@ -51,11 +54,9 @@ def inference(target_language, source_language, target_segment, source_segment) 
         return_tensors="pt",
     ).to(model.device)
 
-    outputs = model.generate(**inputs, max_new_tokens=40)
+    outputs = model.generate(**inputs, max_new_tokens=500)
     print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:]))
-    pass
-
-
+    
 
 def reconstruct(data):
     with open(args.output, 'w', encoding='utf-8') as g:
