@@ -1,0 +1,7 @@
+# Need to output the confidence, beam search path
+# construct a structured prompt to unlock reasoning and self-refinement over three to five steps like what cohere did
+# check if the prompt template fits the context window for the 14GB and 32GB models
+
+
+# construct prompts for refining comet?
+# what did the agentic paper do with comet for gender QE?
