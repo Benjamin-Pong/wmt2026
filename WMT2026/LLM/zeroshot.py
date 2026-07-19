@@ -2,6 +2,8 @@ import json
 import argparse
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from typing import List, Dict
+import os
+import torch
 
 '''
 LLM metric using Gemba MQM Prompt,
@@ -14,7 +16,7 @@ def parse_args():
     parser.add_argument('--input', help='path to original wmt file')
     parser.add_argument('--output', help='predictions by llm in the same format as xcomet')
     parser.add_argument('--model', help='llm model name in huggingface; deepseek-ai/DeepSeek-R1-Distill-Qwen-32B')
-
+    return parser.parse_args()
 def get_systems_evaluated(line):
     return set(line['scores'].keys())
 
@@ -54,13 +56,13 @@ def inference(target_language, source_language, target_segment, source_segment) 
         return_tensors="pt",
     ).to(model.device)
 
-    outputs = model.generate(**inputs, max_new_tokens=500)
+    outputs = model.generate(**inputs, max_new_tokens=100000)
     print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:]))
     
 
-def reconstruct(data):
+def reconstruct(data, output):
     with open(args.output, 'w', encoding='utf-8') as g:
-        for line in data:
+        for i, line in enumerate(data):
             human_scores = line['scores']
             src_lang = line['doc_id'].split('_')[0].split('-')[0]
             tgt_lang = line['doc_id'].split('_')[0].split('-')[1]
@@ -74,26 +76,20 @@ def reconstruct(data):
             evaluated_systems = get_systems_evaluated(line)
             relevant_text = {k:v for k,v in line['tgt_text'].items() if k in evaluated_systems}
             
-                
-        
             scores = {}
             for system in relevant_text:
+                human_score_per_system = human_scores[system]
                 prediction = relevant_text[system]
                 llm_error_spans = inference(tgt_lang, src_lang, relevant_text[system], src_text)
-                scores[system]={'system_id': system, 'prediction':prediction,'segment_score':segment_scores[idx], 'error_span':error_spans[idx], 'logits': logits[idx], 'subword_probs': subword_probs[idx], 'tokens': tokens[idx], 'token_ids': token_ids[idx], 'human_score':human_score_per_system}
+                scores[system]={'system_id': system, 'prediction':prediction, 'error_span':llm_error_spans, 'human_score':human_score_per_system}
                 
 
             res_per_line = {'doc_id': doc_id, 'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'domain': domain, 'scores': scores}
-            f.write(json.dumps(res_per_line, ensure_ascii=False)+'\n')
+            g.write(json.dumps(res_per_line, ensure_ascii=False)+'\n')
             f.flush()
             os.fsync(f.fileno())
-            print(f"line {i} written, file now {os.path.getsize(output_file):,} bytes", flush=True)
+            print(f"line {i} written, file now {os.path.getsize(output):,} bytes", flush=True)
             
-
-
-            
-            g.write(json.dumps(response, ensure_ascii=False) + '\n')
-
 
 
 
@@ -101,13 +97,12 @@ if __name__ == "__main__":
     args = parse_args()
 
     tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
-    model = AutoModelForCausalLM.from_pretrained(args.model, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(args.model, trust_remote_code=True, torch_dtype=torch.bfloat16,   # half precision — ~64GB for 32B, fits your 80GB
+    device_map="auto")
 
         
-    
-
     with open(args.input, 'r', encoding='utf-8') as f:
         data = [json.loads(line) for line in f]
     
-    reconstruct
+    reconstruct(data[0:10], args.output)
     
