@@ -168,7 +168,7 @@ class XCOMETMetricLogitsAdj(UnifiedMetric):
             Offset logits using
             '''
             global_error_stats = self.global_error_stats.to(logits.device)
-            return logits + torch.log(global_error_stats)
+            return logits - (0.5 * torch.log(global_error_stats))
         
         def trim(subwords:torch.Tensor, logits:torch.Tensor, mt_offsets:torch.Tensor, input_ids:torch.Tensor, tokenizer):
             '''
@@ -258,7 +258,7 @@ class XCOMETMetricLogitsAdj(UnifiedMetric):
                 :, :seq_len, :
             ]
 
-            adjusted_logits_global = model_output.logits[:, :seq_len, :]
+            adjusted_logits_global = adjusted_logits_global[:, :seq_len, :]
             
             trimmed_subwords, trimmed_logits, t_tokens, token_ids = trim(subword_probs, adjusted_logits_global, mt_offsets, input_ids, self.encoder.tokenizer)
             error_spans = self.decode(
