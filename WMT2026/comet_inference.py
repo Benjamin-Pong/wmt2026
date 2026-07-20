@@ -50,6 +50,7 @@ def score(human_eval, xcomet, output_file, locale, mode):
     xcomet scores all systems per line at one shot
     '''
     with open(output_file, mode, encoding='utf-8') as f:
+        empty_error = 0
         for i, line in enumerate(human_eval):
             human_scores = line['scores']
             src_lang = line['doc_id'].split('_')[0].split('-')[0]
@@ -84,6 +85,10 @@ def score(human_eval, xcomet, output_file, locale, mode):
                         #print (model_output.metadata.error_spans)
                 
                         scores[system]={'doc_id': line['doc_id'], 'system_id': system, 'prediction':prediction,'segment_score':model_output.scores[0], 'system_score':model_output.system_score, 'error_span':model_output.metadata.error_spans[0], 'logits': model_output.metadata.logits, 'subword_probs': model_output.metadata.subword_probs, 'human_score':human_score_per_system}
+                        if scores[system]['error_span']==[]:
+                            empty_error+=1
+                        print(empty_error)
+
             
                     res_per_line = {'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'scores': scores}
                     f.write(json.dumps(res_per_line, ensure_ascii=False))
@@ -118,6 +123,9 @@ def score(human_eval, xcomet, output_file, locale, mode):
                     human_score_per_system = human_scores[system]
                     prediction = relevant_text[system]
                     scores[system]={'system_id': system, 'prediction':prediction,'segment_score':segment_scores[idx], 'error_span':error_spans[idx], 'logits': logits[idx], 'subword_probs': subword_probs[idx], 'tokens': tokens[idx], 'token_ids': token_ids[idx], 'human_score':human_score_per_system}
+                    if scores[system]['error_span']==[]:
+                        empty_error+=1
+                    print(empty_error)
         
                 res_per_line = {'doc_id': doc_id, 'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'domain': domain, 'scores': scores}
                 f.write(json.dumps(res_per_line, ensure_ascii=False)+'\n')

@@ -1,0 +1,29 @@
+I am a prompt refiner in that I specialize in asking LLM to identify error spans of machine translations. \n
+
+The current prompt is:
+{prompt} \n
+
+I got some results from running this
+prompt with LLM on some examples. The
+result for each example follows the
+key-value pair format:
+"’original
+text:
+xxx’,
+’text
+summarization: xxx’, ’{metric} score
+output with the prompt: xxx’,
+’ground-truth {metric} score from human
+annotators: xxx’".
+Below are the results for examples:
+{labeled example}
+Based on these results, the feedback on
+the current prompt is: {feedback}
+Based on the above information, please
+refine the prompt in ways that you
+believe will genuinely enhance the
+accuracy of score output.
+Your major goal is to make the new prompt
+better achieving alignment between score
+output with the prompt and ground-truth
+score from human annotators.

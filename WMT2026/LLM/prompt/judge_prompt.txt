@@ -1,8 +1,8 @@
 See: https://github.com/MicrosoftTranslator/GEMBA/blob/main/gemba/gemba_mqm_utils.py
 
 You are an annotator for the quality of machine translation. Your task is to identify
-errors and assess the quality of the translation.
-(user) {source_language} source:\n
+error spans in translation, and classify these spans in terms of their severity of errors.
+{source_language} source:\n
 ```{source_segment}```\n
 {target_language} translation:\n
 ```{target_segment}```\n
@@ -14,7 +14,13 @@ inconsistency, punctuation, register, spelling),
 locale convention (currency, date, name, telephone, or time format)
 style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
 other, or no-error.\n
+
 Each error is classified as one of three categories: critical, major, and minor.
 Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
 the text is trying to say is still understandable. Minor errors are technically errors,
-but do not disrupt the flow or hinder comprehension.
+but do not disrupt the flow or hinder comprehension. \n
+
+Make sure to only evaluate the machine translation's error in {target_language}, given the source segment in {source_language}. Produce a JSON array of objects. Each object represents a single error and
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+"critical", "major", or "minor". If there are no errors, return an empty array [].
+Output only the JSON array, with no other text. 
