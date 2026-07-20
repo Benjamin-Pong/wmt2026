@@ -25,7 +25,7 @@ def inference(target_language, source_language, target_segment, source_segment) 
         errors and assess the quality of the translation.
         (user) {source_language} source:\n
         ```{source_segment}```\n
-        {target_language} translation:\n
+        {target_language} machine translation:\n
         ```{target_segment}```\n
         \n
         Based on the source segment and machine translation surrounded with triple backticks, identify
@@ -35,15 +35,18 @@ def inference(target_language, source_language, target_segment, source_segment) 
         locale convention (currency, date, name, telephone, or time format)
         style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
         other, or no-error.\n
+
         Each error is classified as one of three categories: critical, major, and minor.
         Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
         the text is trying to say is still understandable. Minor errors are technically errors,
-        but do not disrupt the flow or hinder comprehension.
+        but do not disrupt the flow or hinder comprehension. \n
 
-        Produce a JSON array of objects. Each object represents a single error and
+        Make sure to only evaluate the machine translation's error in {target_language}, given the source segment in {source_language}. Produce a JSON array of objects. Each object represents a single error and
         must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
         "critical", "major", or "minor". If there are no errors, return an empty array [].
-        Output only the JSON array, with no other text.
+        Output only the JSON array, with no other text. 
+
+        
         '''
     messages = [
     {"role": "user", "content": f"{prompt}"},
@@ -80,13 +83,14 @@ def reconstruct(data, output):
             for system in relevant_text:
                 human_score_per_system = human_scores[system]
                 prediction = relevant_text[system]
+                print(f"source: {src_text}, target: {relevant_text[system]}")
                 llm_error_spans = inference(tgt_lang, src_lang, relevant_text[system], src_text)
                 scores[system]={'system_id': system, 'prediction':prediction, 'error_span':llm_error_spans, 'human_score':human_score_per_system}
                 
 
             res_per_line = {'doc_id': doc_id, 'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'domain': domain, 'scores': scores}
             g.write(json.dumps(res_per_line, ensure_ascii=False)+'\n')
-            f.flush()
+            G.flush()
             os.fsync(f.fileno())
             print(f"line {i} written, file now {os.path.getsize(output):,} bytes", flush=True)
             
