@@ -90,7 +90,7 @@ def reconstruct(data, output):
 
             res_per_line = {'doc_id': doc_id, 'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'domain': domain, 'scores': scores}
             g.write(json.dumps(res_per_line, ensure_ascii=False)+'\n')
-            G.flush()
+            g.flush()
             os.fsync(f.fileno())
             print(f"line {i} written, file now {os.path.getsize(output):,} bytes", flush=True)
             

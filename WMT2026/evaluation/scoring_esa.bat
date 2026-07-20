@@ -1,0 +1,1 @@
+scoring_esa.py "C:\Users\Benjamin Pong\OneDrive\Documents\Machine Translation Metrics\WMT2026\input" "C:\Users\Benjamin Pong\OneDrive\Documents\Machine Translation Metrics\WMT2026\output" "xcometlogitsadj.tsv"
