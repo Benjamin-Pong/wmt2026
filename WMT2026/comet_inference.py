@@ -125,7 +125,7 @@ def score(human_eval, xcomet, output_file, locale, mode):
                     scores[system]={'system_id': system, 'prediction':prediction,'segment_score':segment_scores[idx], 'error_span':error_spans[idx], 'logits': logits[idx], 'subword_probs': subword_probs[idx], 'tokens': tokens[idx], 'token_ids': token_ids[idx], 'human_score':human_score_per_system}
                     if scores[system]['error_span']==[]:
                         empty_error+=1
-                    print(empty_error)
+                    #print(empty_error)
         
                 res_per_line = {'doc_id': doc_id, 'source_segment': src_text, 'source_lang': src_lang, 'target_lang': tgt_lang, 'domain': domain, 'scores': scores}
                 f.write(json.dumps(res_per_line, ensure_ascii=False)+'\n')

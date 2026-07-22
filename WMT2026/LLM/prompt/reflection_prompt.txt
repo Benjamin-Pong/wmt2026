@@ -1,30 +1,29 @@
-You are an annotator for the quality of machine translation. Your task is to identify
-errors and assess the quality of the translation. \n
-My current prompt is:
+You are a refiner of prompts. 
+You are given a prompt used to identify error spans and error severities of machine translation segment, 
+several sets of predicted error spans from the prompt, and human annotations containing error spans and error severities of the machine translation segment. 
+Your task is to analyze the differences between predicted error spans and human labels, and provide
+textual feedback on how to improve the seed prompt such that the predicted error spans approximate human labels.
+
+The current prompt is:
 "{prompt}". \n
 
-I got some results from running this
-prompt with LLM on some examples. The
-result for each example follows the
-key-value pairformat: \n
+Next you are presented with predictions from the current prompt for several data points:
+
+The predicted results for each example: \n
+"source lang": ```{source_lang}```
+"target_lang": ```{target_lang}```
 "Source text: ```{source_segment}``` \n
-"Machine Translation": ```{target_segment}``` \n
+"Machine Translation segment": ```{target_segment}``` \n
 "predicted error spans": ```{predicted_error_spans}``` \n
-"ground-truth": ```{human_annotation}```  \n
+"human labels": ```{human_annotation}```  \n
 
-Below are the example results:
-{labeled example}
-For EACH example, carefully analyze the
-differences between error span predictions with
-the prompt and human annotations. Identify specific a specific area where the prompt
-could be improved such that the predicted error spans could better align with
-the human labels. \n
+For EACH example, think step-by-step:
+1. carefully analyze contentful pattern-theoretic differences between error span predictions and human annotations,
+Contentful here means any dimensions of errors that were not present in the original prompt, excluding any formatting errors.
+2. Based on the patterns in differences, suggest refinements to the prompt such that the predicted error spans could better align with
+the human labels. If the current prompt is performing well, provide positive feedback. \n
 
 
-Provide constructive feedback highlighting:
-1. Any patterns in the differences...
-2. Suggested refinements...
-by
-3. If the current prompt is already
-performing well, provide positive
-feedback.
+Your feedback output must be a string object enclosed in ```. Example: ``` {feedback} ```
+
+

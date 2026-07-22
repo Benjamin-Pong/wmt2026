@@ -5,3 +5,8 @@
 
 # construct prompts for refining comet?
 # what did the agentic paper do with comet for gender QE?
+
+
+#Reflector prompt
+- How to integrate resource level?
+- How to integrate the examples for guidance?
