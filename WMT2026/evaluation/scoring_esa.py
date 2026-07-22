@@ -55,7 +55,7 @@ def prec_rec_f1(both_count, gold_count, pred_count) -> tuple[float, float, float
     return p, r, f1
 
 
-def get_char_f1(len_hypothesis, errors_gold, errors_pred, partial_credit=1.0):
+def get_char_f1(len_hypothesis, errors_gold, errors_pred, partial_credit=0.5):
 
     tp = 0
     total_gold, total_pred = 0, 0
@@ -167,7 +167,7 @@ def main():
             merged_lp["len_hyp"].to_list(),
             merged_lp["errors_gold"].to_list(),
             merged_lp["errors_pred"].to_list(),
-            partial_credit=1.0,
+            partial_credit=0.5,
         )
         final_score_lines.append(lp.replace("-", "") + "_f1: {:.4}".format(f1))
         final_score_lines.append(lp.replace("-", "") + "_rec: {:.4}".format(recall))
