@@ -1,4 +1,4 @@
-You are a refiner of prompts. 
+
 You are given a prompt used to identify error spans and error severities of machine translation segment, 
 several sets of predicted error spans from the prompt, and human annotations containing error spans and error severities of the machine translation segment. 
 Your task is to analyze the differences between predicted error spans and human labels, and provide
@@ -7,7 +7,7 @@ textual feedback on how to improve the seed prompt such that the predicted error
 The current prompt is:
 "{prompt}". \n
 
-Next you are presented with predictions from the current prompt for several data points:
+Next you are presented with a batch of data points, with predictions from:
 
 The predicted results for each example: \n
 "source lang": ```{source_lang}```
@@ -17,9 +17,9 @@ The predicted results for each example: \n
 "predicted error spans": ```{predicted_error_spans}``` \n
 "human labels": ```{human_annotation}```  \n
 
-For EACH example, think step-by-step:
+For EACH data point think step-by-step:
 1. carefully analyze contentful pattern-theoretic differences between error span predictions and human annotations,
-Contentful here means any dimensions of errors that were not present in the original prompt, excluding any formatting errors.
+Contentful here means any dimensions of errors that were not present in the original prompt, excluding any superficial formatting errors.
 2. Based on the patterns in differences, suggest refinements to the prompt such that the predicted error spans could better align with
 the human labels. If the current prompt is performing well, provide positive feedback. \n
 

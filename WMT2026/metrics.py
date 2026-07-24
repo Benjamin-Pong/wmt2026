@@ -8,6 +8,7 @@ import torch
 import torch.distributions as td
 import torch.nn.functional as F
 import argparse
+from typing import List, Dict
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -23,17 +24,21 @@ def compute_subword_entropy(subword_probs):
     entropy = entropy.entropy()
     return entropy
 
-def compute_shannon_entropy(curr_span_probabilities, eps: float = 1e-12):
+def compute_average_shannon_entropy(curr_span_probabilities, eps: float = 1e-12) -> torch.Tensor[float]:
+    '''
+    Computes entropy value per subword token, and returns the mean over all tokens
+    '''
     log_probs = torch.log(curr_span_probabilities + eps)
     entropy = -torch.sum(curr_span_probabilities * log_probs, dim=-1)
-    return entropy
+    return entropy.mean()
 
 def compute_continuous(subword_probs):
     continuous_metric = (1- subword_probs[:, -3:].sum(axis=-1)).T
     return continuous_metric
 
-def compute_all_span_entropy(subword_probs, error_span):
+def compute_all_span_entropy(subword_probs, error_span:List[Dict]):
     '''
+    This method computes the  entropy for each predicted error span, similar to xcomet's confidence per span
     Input arguments include subword_probs and error_span per system
     It updates each span prediction (dictionary) with span entropy
     '''
@@ -42,14 +47,23 @@ def compute_all_span_entropy(subword_probs, error_span):
         print(curr_span)
         print(curr_span.keys())
         curr_span_probs = subword_probs[curr_span['start']:curr_span['end'], :]
-        curr_span_entropy = compute_shannon_entropy(curr_span_probs)
+        curr_span_entropy = compute_average_shannon_entropy(curr_span_probs)
         curr_span['span_entropy'] = curr_span_entropy.tolist()
+    
         updated_error_span.append(curr_span)
     return updated_error_span
 
-def compute_logits_adjustment(logits):
+def compute_average_confidence(subword_probs:torch.Tensor) -> torch.Tensor[float]:
+    '''
+    
 
-    pass
+    '''
+    get_max = torch.max(subword_probs, dim=-1).values
+    average_conf = get_max.mean()
+    return average_conf
+
+
+
 
 def main(data, output):
     '''
@@ -75,6 +89,15 @@ def main(data, output):
                 error_span = scores_dict[system]['error_span']
                 updated_error_span_with_span_entropy = compute_all_span_entropy(subword_probs, error_span)
                 scores_dict[system]['error_span'] = updated_error_span_with_span_entropy
+
+                #initialize average entropy over all subtokens in a mt segment 
+                average_entropy = compute_average_shannon_entropy(subword_probs)
+                scores_dict[system]['average_entropy']=average_entropy.item()
+
+                #initialize average confidence over all subtokens in a mt segment
+                average_confidence = compute_average_confidence(subword_probs)
+                scores_dict[system]['average_confidence']=average_confidence.item()
+
             d['scores'] = scores_dict
             o.write(json.dumps(d)+'\n')
     

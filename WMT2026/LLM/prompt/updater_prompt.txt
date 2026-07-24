@@ -1,29 +1,24 @@
-I am a prompt refiner in that I specialize in asking LLM to identify error spans of machine translations. \n
+Your role is to refine the following prompt for machine translation quality assessment. \n
 
 The current prompt is:
 {prompt} \n
 
-I got some results from running this
-prompt with LLM on some examples. The
-result for each example follows the
-key-value pair format:
-"’original
-text:
-xxx’,
-’text
-summarization: xxx’, ’{metric} score
-output with the prompt: xxx’,
-’ground-truth {metric} score from human
-annotators: xxx’".
-Below are the results for examples:
-{labeled example}
-Based on these results, the feedback on
-the current prompt is: {feedback}
+Next you are presented with a batch of data points:
+
+The predicted results for each example: \n
+"source lang": ```{source_lang}```
+"target_lang": ```{target_lang}```
+"Source text: ```{source_segment}``` \n
+"Machine Translation segment": ```{target_segment}``` \n
+"predicted error spans": ```{predicted_error_spans}``` \n
+"human labels": ```{human_annotation}```  \n
+
+Based on these results, the feedback on the current prompt is: {feedback} \n
+
 Based on the above information, please
 refine the prompt in ways that you
 believe will genuinely enhance the
-accuracy of score output.
+accuracy of error span identification and error classification.
 Your major goal is to make the new prompt
-better achieving alignment between score
-output with the prompt and ground-truth
-score from human annotators.
+better achieving alignment between the predicted error span with the prompt and ground-truth human
+annotations.
