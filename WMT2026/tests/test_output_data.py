@@ -30,6 +30,17 @@ def load_updated_metrics_json():
         results = [json.loads(line) for line in f]
     return results
 
+@pytest.fixture
+def load_metrics_results_json():
+    '''
+    Loads the json with updated metrics
+    '''
+    updated_results=r"C:\Users\Benjamin Pong\OneDrive\Documents\Machine Translation Metrics\WMT2026\results\metrics\xcomet.wmt2025esa.full.result.updated.jsonl"
+    with open(updated_results, 'r', encoding='utf-8') as f:
+        results =[json.loads(line) for line in f]
+    return results
+
+
 '''
 def get_systems_evaluated(line):
     return set(line['scores'].keys())
@@ -54,13 +65,14 @@ def score(human_eval):
     print(all_tgt_langs)
     print(total_lines)
 '''
-
+'''
 def test_gold_logits_subword_shape_match(load_gold_json):
     gold_data = load_gold_json[-1]
     gold_logits = torch.tensor(gold_data['scores']['refA']['logits']).shape
     gold_subword_probs = torch.tensor(gold_data['scores']['refA']['subword_probs']).shape
     #gold_tokens = torch.tensor(gold_data['scores']['tokens']).shape
     assert gold_logits==gold_subword_probs
+'''
 
 def test_results_logits_subword_shape_match(load_results_json):
     result_data = load_results_json[-1]
@@ -89,8 +101,16 @@ def test_updated_metrics_fields(load_updated_metrics_json):
     '''
     tests that json contains the additional metrics fields computed.
     '''
-    error_span_data = load_updated_metrics_json[-1]['scores']['refA']['error_span']
+    error_span_data = load_updated_metrics_json[-1]['scores']['refA']['error_span'][-1]
     assert 'span_entropy' in error_span_data.keys()
+    assert type(error_span_data['span_entropy'])==float
+    parent_dict =load_updated_metrics_json[-1]['scores']['refA']
+    assert  'average_entropy' in parent_dict.keys()
+    assert type(parent_dict['average_entropy'])==float
+    assert  'average_confidence' in parent_dict.keys()
+    assert type(parent_dict['average_confidence'])==float
+
+
 
 
 

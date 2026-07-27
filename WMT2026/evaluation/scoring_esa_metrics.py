@@ -8,6 +8,8 @@ import os
 import statistics
 import pandas as pd
 import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
 
 TSV_FIELDS_RELEASE = [
     "doc_id",
@@ -21,6 +23,8 @@ TSV_FIELDS_RELEASE = [
     "reference_segment",
     "domain_name",
     "method",
+    "span_confidences",
+    "span_entropies"
 ]
 
 TSV_FIELDS_GOLD = ["start_indices", "end_indices", "error_types"]
@@ -56,7 +60,6 @@ def prec_rec_f1(both_count, gold_count, pred_count) -> tuple[float, float, float
 
 
 def get_char_f1(len_hypothesis, errors_gold, errors_pred, partial_credit=0.5):
-
     tp = 0
     total_gold, total_pred = 0, 0
     for x, y, z in zip(errors_gold, errors_pred, len_hypothesis):
@@ -96,17 +99,43 @@ def get_error_list(x):
         start_indices = x["start_indices"].split(" ")
         end_indices = x["end_indices"].split(" ")
         error_type = x["error_types"].split(" ")
+        span_confidence=x['span_confidences'].split(" ")
+        span_entropies=x['span_entropies'].split(" ")
 
         errors = []
-        for x, y, z in zip(start_indices, end_indices, error_type):
-            if not x or not y or not z:
+        for x, y, z, a, b in zip(start_indices, end_indices, error_type, span_confidence, span_entropies):
+            if not x or not y or not z or not a or not b:
                 logging.warn("Warning: Missing or empty start_indices, end_indices, or error_types for a non 'no-error' case.")
                 return []
-            errors.append({"start": x, "end": y, "severity": z})
+            errors.append({"start": x, "end": y, "severity": z, "span_confidence": a, "span_entropies":b})
 
         return errors
 
+def plot_confidence_entropy_groups(phantom, partial, output_dir):
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+    for ax, metric in zip(axes, ("confidence", "entropy")):
+        a = np.array([float(s[metric]) for s in phantom if metric in s])
+        b = np.array([float(s[metric]) for s in partial if metric in s])
+        if len(a) == 0 or len(b) == 0:
+            ax.set_title(f"{metric} (no data)")
+            continue
 
+        bins = np.linspace(min(a.min(), b.min()), max(a.max(), b.max()), 40)
+        ax.hist(b, bins=bins, density=True, alpha=0.5, color="steelblue", label="partial (matched)")
+        ax.hist(a, bins=bins, density=True, alpha=0.5, color="crimson", label="phantom (false pos)")
+        ax.axvline(np.median(b), color="steelblue", ls="--", lw=1.5)
+        ax.axvline(np.median(a), color="crimson", ls="--", lw=1.5)
+        ax.set_xlabel(metric)
+        ax.set_ylabel("density")
+        ax.set_title(f"{metric}: phantom vs partial")
+        ax.legend(fontsize=8)
+        ax.grid(True, alpha=0.3)
+
+    fig.tight_layout()
+    out_path = os.path.join(output_dir, "phantom_vs_partial.png")
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+    logging.info(f"Saved distribution plot to {out_path}")
 def main():
     # Set logging properties:
     logging.basicConfig(
@@ -130,6 +159,8 @@ def main():
         sep="\t",
         keep_default_na=False,
     )
+    gold_data['span_confidences']=[""for i in range(len(gold_data))]
+    gold_data['span_entropies']=[""for i in range(len(gold_data))]
 
     gold_data["lp"] = gold_data["source_lang"] + "-" + gold_data["target_lang"]
     predictions_data["lp"] = (
@@ -142,6 +173,10 @@ def main():
 
     final_score_lines = []
     all_scores = []
+    all_phantom=[]
+    all_partial = []
+
+
     for lp in common_lps:
         logging.info(f"Getting errors for pred for {lp}")
         pred_lp = predictions_data[predictions_data["lp"] == lp].copy()
@@ -167,8 +202,19 @@ def main():
             merged_lp["len_hyp"].to_list(),
             merged_lp["errors_gold"].to_list(),
             merged_lp["errors_pred"].to_list(),
-            partial_credit=0.5,
+            partial_credit=1.0,
         )
+        phantom = get_non_overlapping_pred_spans(
+            merged_lp["errors_gold"].to_list(),
+            merged_lp["errors_pred"].to_list(),
+        )
+        partial = get_overlapping_pred_spans(
+            merged_lp["errors_gold"].to_list(),
+            merged_lp["errors_pred"].to_list(),
+        )
+        all_phantom.extend(phantom)
+        all_partial.extend(partial)
+
         final_score_lines.append(lp.replace("-", "") + "_f1: {:.4}".format(f1))
         final_score_lines.append(lp.replace("-", "") + "_rec: {:.4}".format(recall))
         final_score_lines.append(lp.replace("-", "") + "_prec: {:.4}".format(precision))
@@ -182,6 +228,80 @@ def main():
     with open(os.path.join(output_dir, "scores.txt"), "w", encoding="utf-8") as wf:
         for line in final_score_lines:
             wf.write(line + "\n")
+
+def error_analyses():
+    '''
+    This method elucidates the nature of the incorrect error_spans
+    goal is to find out the cause of spurrious flaggings
+    1) Are there many incorrect error spans that get flagged?
+    2) For the incorrect error spans, do they at least overlap with shorter true spans? 
+    3) If so, are they for specific languages? what about these languages make it difficult
+    '''
+    def long_error_spans():
+        pass
+    pass
+
+def _span_interval(er):
+    """Return (start, end) as ints for a usable span, or None to skip.
+    Mirrors get_counts: skips 'missing' starts and 'undecided' severities,
+    which have no character position in the hypothesis."""
+    if er["start"] == "missing":
+        return None
+    if er["severity"] == "undecided":
+        return None
+    return int(er["start"]), int(er["end"])
+
+
+def _spans_overlap(a, b):
+    """Half-open interval overlap: [a_start, a_end) vs [b_start, b_end)."""
+    (a_start, a_end), (b_start, b_end) = a, b
+    return a_start < b_end and b_start < a_end
+
+
+def get_non_overlapping_pred_spans(errors_gold, errors_pred):
+    '''
+    Finds predicted spans that do NOT overlap at all with any gold span
+    (phantom / false-positive spans).
+    Returns a flat list of {"segment_index", "span"} entries.
+    '''
+    non_overlapping = []
+    for seg_idx, (gold, pred) in enumerate(zip(errors_gold, errors_pred)):
+        gold_intervals = [
+            iv for iv in (_span_interval(g) for g in gold) if iv is not None
+        ]
+        for p in pred:
+            p_iv = _span_interval(p)
+            if p_iv is None:
+                continue
+            if not any(_spans_overlap(p_iv, g_iv) for g_iv in gold_intervals):
+                non_overlapping.append({"segment_index": seg_idx, "span": p})
+    return non_overlapping
+
+
+def get_overlapping_pred_spans(errors_gold, errors_pred):
+    '''
+    Finds predicted spans that overlap (partially or fully) with at least
+    one gold span. Returns a flat list of
+    {"segment_index", "span", "overlapping_gold"} entries, where
+    overlapping_gold is the list of gold spans it touches.
+    '''
+    overlapping = []
+    for seg_idx, (gold, pred) in enumerate(zip(errors_gold, errors_pred)):
+        gold_usable = [
+            (g, iv)
+            for g, iv in ((g, _span_interval(g)) for g in gold)
+            if iv is not None
+        ]
+        for p in pred:
+            p_iv = _span_interval(p)
+            if p_iv is None:
+                continue
+            matched = [g for g, g_iv in gold_usable if _spans_overlap(p_iv, g_iv)]
+            if matched:
+                overlapping.append(
+                    {"segment_index": seg_idx, "span": p, "overlapping_gold": matched}
+                )
+    return overlapping
 
 
 if __name__ == "__main__":

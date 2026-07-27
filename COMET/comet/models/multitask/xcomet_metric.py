@@ -186,7 +186,22 @@ class XCOMETMetric(UnifiedMetric):
                 assert len(curr_subword)==len(curr_logits)==len(curr_tokens)==len(curr_token_ids \
                                                                                   )
             return trimmed_subwords, trimmed_logits, tokens, token_ids
+        def compute_average_shannon_entropy(curr_span_probabilities, mt_mask, eps: float = 1e-12) -> torch.Tensor:
+            '''
+            Computes entropy value per subword token, and returns the mean over all tokens
+            '''
+            log_probs = torch.log(curr_span_probabilities + eps)
+            entropy = -torch.sum(curr_span_probabilities * log_probs, dim=-1)
+            avg_ent = (entropy*mt_mask).sum(dim=1) / mt_mask.sum(dim=1)
+            assert not torch.isnan(avg_ent).any(), f"NaN in avg_conf: {avg_ent}"
+            return avg_ent
 
+          
+        def compute_average_confidence(subword_probs, mt_mask):
+            conf = subword_probs.max(dim=-1).values          # [B, S]
+            avg_conf = (conf * mt_mask).sum(dim=1) / mt_mask.sum(dim=1)
+            assert not torch.isnan(avg_conf).any(), f"NaN in avg_conf: {avg_conf}"
+            return avg_conf
         # XCOMET is suposed to be used with a reference thus 3 different inputs.
         if len(batch) == 3:
             predictions = [self.forward(**input_seq) for input_seq in batch]
@@ -248,7 +263,7 @@ class XCOMETMetric(UnifiedMetric):
                 :, :seq_len, :
             ]
             logits = model_output.logits[:, :seq_len, :]
-            trimmed_subwords, trimmed_logits, t_tokens, token_ids = trim(subword_probs, logits, mt_offsets, input_ids, self.encoder.tokenizer)
+            #trimmed_subwords, trimmed_logits, t_tokens, token_ids = trim(subword_probs, logits, mt_offsets, input_ids, self.encoder.tokenizer)
             error_spans = self.decode(
                 subword_probs, batch[0]["input_ids"], batch[0]["mt_offsets"]
             )
@@ -257,16 +272,122 @@ class XCOMETMetric(UnifiedMetric):
                 regression_score * sum(self.score_weights[:3])
                 + mqm_scores.to(regression_score.device) * self.score_weights[3]
             )
+            mt_mask = mt_mask.unsqueeze(-1).to(logits.dtype)
+            trimmed_logits = logits * mt_mask
+            trimmed_subword_probs = subword_probs * mt_mask
+
+            avg_confidence = compute_average_confidence(subword_probs, mt_mask)
+            avg_entropy = compute_average_shannon_entropy(subword_probs, mt_mask)
+           
             batch_prediction = Prediction(
                 scores=final_scores,
                 metadata=Prediction(
                     src_scores=regression_score,
                     mqm_scores=mqm_scores,
+                    avg_confidence=avg_confidence,
+                    avg_entropy=avg_entropy,
                     error_spans=error_spans,
-                    subword_probs = trimmed_subwords,
-                    logits = trimmed_logits,
-                    tokens=t_tokens,
-                    token_ids = token_ids
+                    subword_probs=trimmed_subword_probs,
+                    logits=trimmed_logits,
                 ),
             )
         return batch_prediction
+
+    def decode(
+        self,
+        subword_probs: torch.Tensor,
+        input_ids: torch.Tensor,
+        mt_offsets: torch.Tensor,
+    ) -> List[Dict]:
+        """Decode error spans from subwords.
+
+        Args:
+            subword_probs (torch.Tensor): probabilities of each label for each subword.
+            input_ids (torch.Tensor): input ids from the model.
+            mt_offsets (torch.Tensor): subword offsets.
+
+        Return:
+            List with of dictionaries with text, start, end, severity and a
+            confidence score which is the average of the probs for that label.
+        """
+        decoded_output = []
+        for i in range(len(mt_offsets)):
+            seq_len = len(mt_offsets[i])
+            error_spans, in_span, span = [], False, {}
+            for token_id, probs, token_offset in zip(
+                input_ids[i, :seq_len], subword_probs[i][:seq_len], mt_offsets[i]
+            ):
+                if self.decoding_threshold:
+                    if torch.sum(probs[1:]) > self.decoding_threshold:
+                        probability, label_value = torch.topk(probs[1:], 1)
+                        label_value += 1  # offset from removing label 0
+                    else:
+                        # This is just to ensure same format but at this point
+                        # we will only look at label 0 and its prob
+                        probability, label_value = torch.topk(probs[0], 1)
+                else:
+                    probability, label_value = torch.topk(probs, 1)
+
+                # Some torch versions topk returns a shape 1 tensor with only
+                # a item inside
+                label_value = (
+                    label_value.item()
+                    if label_value.dim() < 1
+                    else label_value[0].item()
+                )
+                label = self.label_encoder.ids_to_label.get(label_value)
+                # Label set:
+                # O I-minor I-major
+                # Begin of annotation span
+                if label.startswith("I") and not in_span:
+                    in_span = True
+                    span["tokens"] = [
+                        token_id,
+                    ]
+                    span["severity"] = label.split("-")[1]
+                    span["offset"] = list(token_offset)
+                    span["confidence"] = [
+                        probability,
+                    ]
+                    span['probs']=[probs]
+
+                # Inside an annotation span
+                elif label.startswith("I") and in_span:
+                    span["tokens"].append(token_id)
+                    span["confidence"].append(probability)
+                    # Update offset end
+                    span["offset"][1] = token_offset[1]
+                    span["probs"].append(probs)
+
+                # annotation span finished.
+                elif label == "O" and in_span:
+                    error_spans.append(span)
+                    in_span, span = False, {}
+
+            sentence_output = []
+            def compute_average_shannon_entropy(curr_span_probabilities, eps: float = 1e-12) -> torch.Tensor:
+                '''
+                Computes entropy value per subword token, and returns the mean over all tokens
+                '''
+                log_probs = torch.log(curr_span_probabilities + eps)
+                entropy = -torch.sum(curr_span_probabilities * log_probs, dim=-1)
+                return entropy.mean()
+
+            for span in error_spans:
+                curr_span_probs = torch.stack(span['probs'])
+                entropy = compute_average_shannon_entropy(curr_span_probs)
+                
+                assert not torch.isnan(entropy).any(), f"NaN in span entropy: {entropy}"
+                print(entropy)
+                sentence_output.append(
+                    {
+                        "text": self.encoder.tokenizer.decode(span["tokens"]),
+                        "confidence": torch.concat(span["confidence"]).mean().item(),
+                        "entropy": entropy.item(),
+                        "severity": span["severity"],
+                        "start": span["offset"][0],
+                        "end": span["offset"][1],
+                    }
+                )
+            decoded_output.append(sentence_output)
+        return decoded_output

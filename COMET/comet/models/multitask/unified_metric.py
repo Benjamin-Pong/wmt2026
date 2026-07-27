@@ -692,6 +692,7 @@ class UnifiedMetric(CometModel):
                     span["confidence"] = [
                         probability,
                     ]
+                   
 
                 # Inside an annotation span
                 elif label.startswith("I") and in_span:
@@ -699,6 +700,7 @@ class UnifiedMetric(CometModel):
                     span["confidence"].append(probability)
                     # Update offset end
                     span["offset"][1] = token_offset[1]
+                   
 
                 # annotation span finished.
                 elif label == "O" and in_span:
@@ -706,11 +708,16 @@ class UnifiedMetric(CometModel):
                     in_span, span = False, {}
 
             sentence_output = []
+
+
             for span in error_spans:
+                curr_span_probs = torch.stack(span['probs'])
+          
                 sentence_output.append(
                     {
                         "text": self.encoder.tokenizer.decode(span["tokens"]),
                         "confidence": torch.concat(span["confidence"]).mean().item(),
+                     
                         "severity": span["severity"],
                         "start": span["offset"][0],
                         "end": span["offset"][1],

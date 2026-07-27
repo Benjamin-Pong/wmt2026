@@ -24,7 +24,7 @@ def compute_subword_entropy(subword_probs):
     entropy = entropy.entropy()
     return entropy
 
-def compute_average_shannon_entropy(curr_span_probabilities, eps: float = 1e-12) -> torch.Tensor[float]:
+def compute_average_shannon_entropy(curr_span_probabilities, eps: float = 1e-12) -> torch.Tensor:
     '''
     Computes entropy value per subword token, and returns the mean over all tokens
     '''
@@ -47,13 +47,19 @@ def compute_all_span_entropy(subword_probs, error_span:List[Dict]):
         print(curr_span)
         print(curr_span.keys())
         curr_span_probs = subword_probs[curr_span['start']:curr_span['end'], :]
+        print(subword_probs.shape)
         curr_span_entropy = compute_average_shannon_entropy(curr_span_probs)
-        curr_span['span_entropy'] = curr_span_entropy.tolist()
+        curr_span['span_entropy'] = curr_span_entropy.item()
+        if curr_span_entropy.item():
+            print(curr_span_entropy)
+        else:
+            "does not exist"
+            break
     
         updated_error_span.append(curr_span)
     return updated_error_span
 
-def compute_average_confidence(subword_probs:torch.Tensor) -> torch.Tensor[float]:
+def compute_average_confidence(subword_probs:torch.Tensor) -> torch.Tensor:
     '''
     
 
@@ -63,15 +69,13 @@ def compute_average_confidence(subword_probs:torch.Tensor) -> torch.Tensor[float
     return average_conf
 
 
-
-
-def main(data, output):
+def compute_metrics(data, output):
     '''
     input args
     Computes all relevant metrics 
     '''
     with open(data, 'r', encoding='utf-8') as f:
-        data = [json.loads(line) for line in f]
+        data = [json.loads(f.readline())]
     with open(output, 'w', encoding='utf-8') as o:
         for d in data:
             scores_dict = d['scores']
@@ -83,8 +87,8 @@ def main(data, output):
                 entropy = compute_subword_entropy(subword_probs)
                 scores_dict[system]['subword_entropy']=entropy.tolist() #store entropy as a metric to json
 
-                continuous = compute_continuous(subword_probs)
-                scores_dict[system]['continuous']=continuous.tolist()
+                #continuous = compute_continuous(subword_probs)
+                #scores_dict[system]['continuous']=continuous.tolist()
 
                 error_span = scores_dict[system]['error_span']
                 updated_error_span_with_span_entropy = compute_all_span_entropy(subword_probs, error_span)
@@ -100,11 +104,15 @@ def main(data, output):
 
             d['scores'] = scores_dict
             o.write(json.dumps(d)+'\n')
-    
-if __name__ == '__main__':
-    args = parse_args()
-    main(args.pred_json, args.output)
 
+def main():
+    args = parse_args()
+    compute_metrics(args.pred_json, args.output)
+    
+
+if __name__ == '__main__':
+    main()
+    
 
         
 

@@ -19,5 +19,5 @@ jobs:
       - name: Install Requirements
         run: |
           python -m pip install --upgrade pip
-          pip install unbabel-comet transformers torch accelerate
+          pip install unbabel-comet transformers torch accelerate matplotlib
           comet-score --help

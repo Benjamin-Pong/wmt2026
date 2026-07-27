@@ -111,18 +111,21 @@ def score(human_eval, xcomet, output_file, locale, mode):
                         }
                     )
                 model_output = xcomet.predict(data, batch_size=32, gpus=1)
+             
                 segment_scores = model_output.scores
                 #system_scores = model_output.system_scores
                 error_spans = model_output.metadata.error_spans
                 logits = model_output.metadata.logits
                 subword_probs = model_output.metadata.subword_probs
-                tokens = model_output.metadata.tokens
-                token_ids = model_output.metadata.token_ids
+                avg_conf = model_output.metadata.avg_confidence
+                avg_ent = model_output.metadata.avg_entropy
+         
 
                 for idx, system in enumerate(relevant_text):
                     human_score_per_system = human_scores[system]
                     prediction = relevant_text[system]
-                    scores[system]={'system_id': system, 'prediction':prediction,'segment_score':segment_scores[idx], 'error_span':error_spans[idx], 'logits': logits[idx], 'subword_probs': subword_probs[idx], 'tokens': tokens[idx], 'token_ids': token_ids[idx], 'human_score':human_score_per_system}
+                    
+                    scores[system]={'system_id': system, 'prediction':prediction,'segment_score':segment_scores[idx], 'avg_confidence':avg_conf[idx], 'avg_entropy': avg_ent[idx], 'error_span':error_spans[idx], 'logits': logits[idx], 'subword_probs': subword_probs[idx], 'human_score':human_score_per_system}
                     if scores[system]['error_span']==[]:
                         empty_error+=1
                     #print(empty_error)

@@ -27,12 +27,17 @@ def unpack_error_span(error_spans):
     start_indices = []
     end_indices = []
     error_types = []
+    span_entropies=[]
+    span_confidences=[]
     for error_span in error_spans:
         start_indices.append(str(error_span['start']))
         end_indices.append(str(error_span['end']))
         error_types.append(error_span['severity'])
+        span_entropies.append(str(error_span['span_entropy']))
+        print(error_span['span_entropy'])
+        span_confidences.append(str(error_span['confidence']))
     
-    return ' '.join(start_indices), ' '.join(end_indices), ' '.join(error_types)
+    return ' '.join(start_indices), ' '.join(end_indices), ' '.join(error_types), ' '.join(span_confidences), ' '.join(span_entropies)
 
 
 
@@ -74,15 +79,19 @@ def extract_values(instance, counters_by_lp):
         segment_id = counters_by_lp[lp]
         counters_by_lp[lp]+=1
 
-        start_indices, end_indices, error_types = unpack_error_span(score['error_span'])
+        start_indices, end_indices, error_types, span_confidences, span_entropies = unpack_error_span(score['error_span'])
         doc_data['segment_id']= segment_id
         doc_data['start_indices']= start_indices
         doc_data['end_indices']= end_indices
+        
         if error_types:
             doc_data['error_types']= error_types
+            doc_data['span_confidences']=span_confidences
+            doc_data['span_entropies'] = span_entropies
         else:
             doc_data['error_types'] = 'no-error'
-
+            doc_data['span_confidences']='no-error'
+            doc_data['span_entropies'] = 'no-error'
         all_system_results_per_jsonl.append(doc_data)
 
     return all_system_results_per_jsonl, counters_by_lp
@@ -120,7 +129,9 @@ if __name__ == "__main__":
     "method",
     "start_indices", 
     "end_indices", 
-    "error_types"
+    "error_types",
+    "span_confidences",
+    "span_entropies"
 ]
     args = parse_args()
     main(TSV_FIELDS_RELEASE, args.results_json, args.prediction_tsv)
