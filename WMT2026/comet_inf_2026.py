@@ -94,6 +94,8 @@ def score(human_eval, xcomet, submission_file, experiment_file, mode):
                 for key in keys_remove:
                     for error_span in error_span_clean:
                         error_span.pop(key)
+                        if error_span['severity']=='critical':
+                            error_span['severity']= 'major'
                 scores_exp[system]={'system_id': system, 'prediction':prediction, 'avg_confidence':avg_conf[idx], 'avg_entropy': avg_ent[idx], 'errors':error_spans[idx], 'logits': logits[idx], 'subword_probs': subword_probs[idx]}
 
                 scores_submission[system]={'errors': error_span_clean, 'omission': None}
@@ -140,7 +142,7 @@ if __name__ == "__main__":
             human_eval_start_idx = last_index+1
             human_eval = human_eval[human_eval_start_idx:]
             print(f'continuing from line {human_eval_start_idx}')
-    score(human_eval[0:2], xcomet, submission_file, experiment_file, args.mode)
+    score(human_eval, xcomet, submission_file, experiment_file, args.mode)
     
 
   
