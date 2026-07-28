@@ -196,7 +196,7 @@ class XCOMETMetricLogitsAdj(XCOMETMetric):
                 Offset logits using
                 '''
                 global_error_stats = self.global_error_stats.to(logits.device)
-                return logits - (0.7 * torch.log(global_error_stats))
+                return logits - (0.5 * torch.log(global_error_stats))
             def compute_average_shannon_entropy(curr_span_probabilities, mt_mask, eps: float = 1e-12) -> torch.Tensor:
                 '''
                 Computes entropy value per subword token, and returns the mean over all tokens
@@ -214,7 +214,7 @@ class XCOMETMetricLogitsAdj(XCOMETMetric):
     
               
             def compute_average_confidence(subword_probs, mt_mask):
-                print("compute avg confidence!")
+                #print("compute avg confidence!")
                 mt_mask = mt_mask.squeeze(-1)
                 #print(mt_mask.shape)
                 conf = subword_probs.max(dim=-1).values          # [B, S]
@@ -285,11 +285,11 @@ class XCOMETMetricLogitsAdj(XCOMETMetric):
                     :, :seq_len, :
                 ]
                 logits = model_output.logits[:, :seq_len, :]
-                print(f"mt_mask_shape:{mt_mask.shape}")
-                print(f"logits__shape:{logits.shape}")
-                print(f"subword_probs_shape:{subword_probs.shape}")
+                #print(f"mt_mask_shape:{mt_mask.shape}")
+                #print(f"logits__shape:{logits.shape}")
+                #print(f"subword_probs_shape:{subword_probs.shape}")
                 mt_mask = mt_mask[:, :seq_len]
-                print(f"sliced mask: {mt_mask.shape}")
+                #print(f"sliced mask: {mt_mask.shape}")
                 assert subword_probs.shape[1] == logits.shape[1] == mt_mask.shape[1]
                 assert subword_probs.shape[0] == logits.shape[0] == mt_mask.shape[0]
                 #trimmed_subwords, trimmed_logits, t_tokens, token_ids = trim(subword_probs, logits, mt_offsets, input_ids, self.encoder.tokenizer)

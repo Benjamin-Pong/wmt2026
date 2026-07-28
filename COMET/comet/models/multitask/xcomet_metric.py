@@ -378,7 +378,7 @@ class XCOMETMetric(UnifiedMetric):
                 entropy = compute_average_shannon_entropy(curr_span_probs)
                 
                 assert not torch.isnan(entropy).any(), f"NaN in span entropy: {entropy}"
-                print(entropy)
+                #print(entropy)
                 sentence_output.append(
                     {
                         "text": self.encoder.tokenizer.decode(span["tokens"]),

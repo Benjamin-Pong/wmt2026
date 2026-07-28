@@ -90,15 +90,20 @@ def score(human_eval, xcomet, submission_file, experiment_file, mode):
                 #human_score_per_system = human_scores[system] NOT RELEVANT FOR TEST SET
                 prediction = all_predictions[system]
                 keys_remove = ['text', 'entropy', 'confidence']
-                error_span_clean = error_spans[idx]
+                error_span_clean_sub = error_spans[idx]
+                error_span_clean_exp = error_spans[idx]
                 for key in keys_remove:
-                    for error_span in error_span_clean:
+                    for error_span in error_span_clean_sub:
                         error_span.pop(key)
                         if error_span['severity']=='critical':
                             error_span['severity']= 'major'
-                scores_exp[system]={'system_id': system, 'prediction':prediction, 'avg_confidence':avg_conf[idx], 'avg_entropy': avg_ent[idx], 'errors':error_spans[idx], 'logits': logits[idx], 'subword_probs': subword_probs[idx]}
+                for error_span in error_span_clean_exp:
+                    if error_span['severity']=='critical':
+                        error_span['severity']= 'major'
 
-                scores_submission[system]={'errors': error_span_clean, 'omission': None}
+                scores_exp[system]={'system_id': system, 'prediction':prediction, 'avg_confidence':avg_conf[idx], 'avg_entropy': avg_ent[idx], 'errors':error_span_clean_exp, 'logits': logits[idx], 'subword_probs': subword_probs[idx]}
+
+                scores_submission[system]={'errors': error_span_clean_sub, 'omission': None}
         
     
             res_sub_per_line = {'item_id': item_id, 'task1_pred': scores_submission}
@@ -109,7 +114,7 @@ def score(human_eval, xcomet, submission_file, experiment_file, mode):
             os.fsync(f.fileno())
             g.write(json.dumps(res_exp_per_line, ensure_ascii=False)+'\n')
             g.flush()
-            os.fsync(f.fileno())
+            os.fsync(g.fileno())
             print(f"line {i} written, file now {os.path.getsize(submission_file):,} bytes", flush=True)
             print(f"line {i} written, file now {os.path.getsize(experiment_file):,} bytes", flush=True)
 
