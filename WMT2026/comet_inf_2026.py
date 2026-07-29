@@ -9,6 +9,7 @@ from huggingface_hub import whoami
 import json
 import argparse
 import inspect
+import copy
 
 
 env_path = Path(__file__).resolve().parent / ".env"
@@ -90,10 +91,10 @@ def score(human_eval, xcomet, submission_file, experiment_file, mode):
                 #human_score_per_system = human_scores[system] NOT RELEVANT FOR TEST SET
                 prediction = all_predictions[system]
                 keys_remove = ['text', 'entropy', 'confidence']
-                error_span_clean_sub = error_spans[idx]
-                error_span_clean_exp = error_spans[idx]
+                error_span_clean_sub = copy.deepcopy(error_spans[idx])
+                error_span_clean_exp = copy.deepcopy(error_spans[idx])
                 for key in keys_remove:
-                    if error_span_clean_sub!=[]
+                    if error_span_clean_sub!=[]:
                         for error_span in error_span_clean_sub:
                             error_span.pop(key)
                             if error_span['severity']=='critical':
