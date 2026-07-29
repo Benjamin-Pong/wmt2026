@@ -36,6 +36,9 @@ def get_unique_langpairs(data, all_pairs):
     return langpairs
 
 def split(data, langpairs):
+    '''
+    Splits up the large json files into specific languages
+    '''
     handles = {}
     total_lines = 0
     for line in data:
@@ -65,7 +68,32 @@ def check_lines(data):
     assert original_lines == total_lines
 
         
-    
+def check_size_high_priority(high_priority):
+    import glob
+    import os
+    OUTPUT_DIR="mt2026_split"
+    #print("before", OUTPUT_DIR)
+    highpriority = set(high_priority)
+    total = 0
+    for path in glob.glob(os.path.join(OUTPUT_DIR, "*.jsonl")):
+        #print(path)
+        file=path.split('\\')[1]
+        #print(file)
+        src_lang, tgt_lang = file.split('.')[0].split('_')[0], file.split('.')[0].split('_')[1]
+        langpair = (src_lang, tgt_lang)
+        #print(langpair)
+        if langpair in high_priority:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = [json.loads(line)for line in f]
+                total+=len(data)
+                print(f"{langpair}: {len(data)}")
+    print("total", total)
+
+
+
+
+
+
         
    
 
@@ -92,3 +120,5 @@ high_priority = [
     ('eng', 'ind'),
     ('eng', 'sme'),
 ]
+
+check_size_high_priority(high_priority)

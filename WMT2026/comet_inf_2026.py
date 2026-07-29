@@ -93,13 +93,15 @@ def score(human_eval, xcomet, submission_file, experiment_file, mode):
                 error_span_clean_sub = error_spans[idx]
                 error_span_clean_exp = error_spans[idx]
                 for key in keys_remove:
-                    for error_span in error_span_clean_sub:
-                        error_span.pop(key)
+                    if error_span_clean_sub!=[]
+                        for error_span in error_span_clean_sub:
+                            error_span.pop(key)
+                            if error_span['severity']=='critical':
+                                error_span['severity']= 'major'
+                if error_span_clean_exp!=[]:
+                    for error_span in error_span_clean_exp:
                         if error_span['severity']=='critical':
                             error_span['severity']= 'major'
-                for error_span in error_span_clean_exp:
-                    if error_span['severity']=='critical':
-                        error_span['severity']= 'major'
 
                 scores_exp[system]={'system_id': system, 'prediction':prediction, 'avg_confidence':avg_conf[idx], 'avg_entropy': avg_ent[idx], 'errors':error_span_clean_exp, 'logits': logits[idx], 'subword_probs': subword_probs[idx]}
 

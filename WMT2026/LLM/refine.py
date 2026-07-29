@@ -39,8 +39,8 @@ def refine_26(data, k):
 
         #extract all the required fields for a sample to be injected into a prompt
         #per system per line
-        src_lang = line['item_id'].split("###")[1].split('_')[0].strip()
-        tgt_lang = line['item_id'].split('###')[2].split('_')[0].strip()
+        src_lang = line['item_id'].split("###")[1].split('_')[1]
+        tgt_lang = line['item_id'].split('###')[2].split('_')[1]
         system_scores = line["task_pred"]
         for system in system_scores:
             prediction = system_scores['prediction']
