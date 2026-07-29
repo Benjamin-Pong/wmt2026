@@ -78,3 +78,17 @@ with open(args.input, 'r', encoding='utf-8') as f:
 langpairs = get_unique_langpairs(data, args.all_pairs)
 split(data, langpairs)
 check_lines(data)
+
+high_priority = [
+    ('ces', 'deu'),
+    ('cs', 'de'),
+    ('ces', 'vie'),
+    ('zh', 'ja'),
+    ('zho', 'jpn'),
+    ('eng', 'arz'),
+    ('eng', 'ekk'),
+    ('en', 'is'),
+    ('eng', 'isl'),
+    ('eng', 'ind'),
+    ('eng', 'sme'),
+]
