@@ -32,6 +32,9 @@ def plot_distribution(metric):
     plt.xlabel(f"Average {metric}")
     plt.savefig(f"{metric}.png", dpi=150)
 
+def phantom_partial(metric):
+    
+
 
 if __name__ == "__main__":
     args = parse_args()

@@ -27,6 +27,7 @@ def unpack_error_span(error_spans):
     start_indices = []
     end_indices = []
     error_types = []
+    
     for error_span in error_spans:
         start_indices.append(str(error_span['start_i']))
         end_indices.append(str(error_span['end_i']))

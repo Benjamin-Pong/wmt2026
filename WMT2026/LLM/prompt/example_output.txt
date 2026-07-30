@@ -1,0 +1,1084 @@
+/content/drive/MyDrive/wmt2026/LLM
+Requirement already satisfied: transformers in /usr/local/envs/comet/lib/python3.11/site-packages (4.46.3)
+Requirement already satisfied: torch in /usr/local/envs/comet/lib/python3.11/site-packages (2.5.1)
+Requirement already satisfied: accelerate in /usr/local/envs/comet/lib/python3.11/site-packages (1.14.0)
+Requirement already satisfied: filelock in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (3.16.1)
+Requirement already satisfied: huggingface-hub<1.0,>=0.23.2 in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (0.26.3)
+Requirement already satisfied: numpy>=1.17 in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (1.24.4)
+Requirement already satisfied: packaging>=20.0 in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (24.2)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (6.0.2)
+Requirement already satisfied: regex!=2019.12.17 in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (2024.11.6)
+Requirement already satisfied: requests in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (2.32.3)
+Requirement already satisfied: tokenizers<0.21,>=0.20 in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (0.20.3)
+Requirement already satisfied: safetensors>=0.4.1 in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (0.4.5)
+Requirement already satisfied: tqdm>=4.27 in /usr/local/envs/comet/lib/python3.11/site-packages (from transformers) (4.67.1)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/envs/comet/lib/python3.11/site-packages (from huggingface-hub<1.0,>=0.23.2->transformers) (2024.10.0)
+Requirement already satisfied: typing-extensions>=3.7.4.3 in /usr/local/envs/comet/lib/python3.11/site-packages (from huggingface-hub<1.0,>=0.23.2->transformers) (4.12.2)
+Requirement already satisfied: networkx in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (3.1)
+Requirement already satisfied: jinja2 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (3.1.4)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.4.127 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (12.4.127)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.4.127 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (12.4.127)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.4.127 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (12.4.127)
+Requirement already satisfied: nvidia-cudnn-cu12==9.1.0.70 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (9.1.0.70)
+Requirement already satisfied: nvidia-cublas-cu12==12.4.5.8 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (12.4.5.8)
+Requirement already satisfied: nvidia-cufft-cu12==11.2.1.3 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (11.2.1.3)
+Requirement already satisfied: nvidia-curand-cu12==10.3.5.147 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (10.3.5.147)
+Requirement already satisfied: nvidia-cusolver-cu12==11.6.1.9 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (11.6.1.9)
+Requirement already satisfied: nvidia-cusparse-cu12==12.3.1.170 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (12.3.1.170)
+Requirement already satisfied: nvidia-nccl-cu12==2.21.5 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (2.21.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.4.127 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (12.4.127)
+Requirement already satisfied: nvidia-nvjitlink-cu12==12.4.127 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (12.4.127)
+Requirement already satisfied: triton==3.1.0 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (3.1.0)
+Requirement already satisfied: sympy==1.13.1 in /usr/local/envs/comet/lib/python3.11/site-packages (from torch) (1.13.1)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /usr/local/envs/comet/lib/python3.11/site-packages (from sympy==1.13.1->torch) (1.3.0)
+Requirement already satisfied: psutil in /usr/local/envs/comet/lib/python3.11/site-packages (from accelerate) (7.2.2)
+Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/envs/comet/lib/python3.11/site-packages (from jinja2->torch) (2.1.5)
+Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/envs/comet/lib/python3.11/site-packages (from requests->transformers) (3.4.0)
+Requirement already satisfied: idna<4,>=2.5 in /usr/local/envs/comet/lib/python3.11/site-packages (from requests->transformers) (3.10)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/envs/comet/lib/python3.11/site-packages (from requests->transformers) (2.2.3)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/envs/comet/lib/python3.11/site-packages (from requests->transformers) (2024.8.30)
+Loading checkpoint shards: 100% 8/8 [00:19<00:00,  2.40s/it]
+[{'text': '<s>', 'confidence': 0.44097480177879333, 'entropy': 1.2825865745544434, 'severity': 'major', 'start': 0, 'end': 0}, {'text': '>Nhà xưởng sản xuất giũa ở', 'confidence': 0.4318789839744568, 'entropy': 1.2044801712036133, 'severity': 'minor', 'start': 2, 'end': 28}, {'text': 'řižánky thuộc vùng', 'confidence': 0.47527915239334106, 'entropy': 1.2185019254684448, 'severity': 'minor', 'start': 30, 'end': 48}, {'text': 'ár nad Sázavou', 'confidence': 0.4085392653942108, 'entropy': 1.2777836322784424, 'severity': 'minor', 'start': 51, 'end': 65}, {'text': 'di tích văn hóa</', 'confidence': 0.41557618975639343, 'entropy': 1.2779167890548706, 'severity': 'minor', 'start': 78, 'end': 96}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Nhà xưởng sản xuất giũa ở Křižánky thuộc vùng Žďár nad Sázavou đã trở thành di tích văn hóa</p> ```\n
+
+```predicted error spans: [{'text': '<s>', 'confidence': 0.44097480177879333, 'entropy': 1.2825865745544434, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'di tích văn hóa</', 'confidence': 0.41557618975639343, 'entropy': 1.2779167890548706, 'severity': 'minor', 'start': 78, 'end': 96}, {'text': 'ár nad Sázavou', 'confidence': 0.4085392653942108, 'entropy': 1.2777836322784424, 'severity': 'minor', 'start': 51, 'end': 65}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Okay, I need to evaluate the predicted error spans in the machine translation from Czech to Vietnamese. The source text is about a pilníkárna (a type of forge) becoming a cultural heritage site. The target translation is "Nhà xưởng sản xuất giũa ở Křižánky thuộc vùng Žďár nad Sázavou đã trở thành di tích văn hóa."
+
+Looking at the predicted errors:
+
+1. The first span is '<s>' with low confidence and entropy. It's marked as major severity. This might be a tokenization issue, perhaps the start of the sentence. Since it's a minor formatting issue, I'll reclassify it as minor.
+
+2. The second span is 'di tích văn hóa</' at the end. The closing tag seems incorrect in the target. This is a minor punctuation error, so it's correctly classified.
+
+3. The third span is 'ár nad Sázavou'. The correct name should be 'Žďár nad Sázavou'. The machine translation missed the 'Žď' part. This omission affects clarity, so it's a major error.
+
+I'll reclassify the first error to minor and keep the others as they are. No spans need to be removed or further segmented.
+</think>
+
+```json
+[
+    {
+        "start": 0,
+        "end": 0,
+        "severity": "minor"
+    },
+    {
+        "start": 78,
+        "end": 96,
+        "severity": "minor"
+    },
+    {
+        "start": 51,
+        "end": 65,
+        "severity": "major"
+    }
+]
+```<｜end▁of▁sentence｜>
+None
+dict_keys(['system_id', 'src', 'prediction', 'avg_confidence', 'avg_entropy', 'errors', 'logits', 'subword_probs', 'refined_errors'])
+[{'text': '<s>', 'confidence': 0.46738025546073914, 'entropy': 1.2579162120819092, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'Xưởng bào răng ở Křižánky trên Ž', 'confidence': 0.3843003213405609, 'entropy': 1.256469488143921, 'severity': 'major', 'start': 3, 'end': 35}, {'text': 'sko', 'confidence': 0.32637739181518555, 'entropy': 1.344264030456543, 'severity': 'minor', 'start': 38, 'end': 41}, {'text': 'di tích văn', 'confidence': 0.37346309423446655, 'entropy': 1.3190816640853882, 'severity': 'minor', 'start': 54, 'end': 66}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Xưởng bào răng ở Křižánky trên Žďársko đã trở thành di tích văn hóa</p> ```\n
+
+```predicted error spans: [{'text': 'sko', 'confidence': 0.32637739181518555, 'entropy': 1.344264030456543, 'severity': 'minor', 'start': 38, 'end': 41}, {'text': 'di tích văn', 'confidence': 0.37346309423446655, 'entropy': 1.3190816640853882, 'severity': 'minor', 'start': 54, 'end': 66}, {'text': '<s>', 'confidence': 0.46738025546073914, 'entropy': 1.2579162120819092, 'severity': 'major', 'start': 0, 'end': 0}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Okay, so I'm trying to help evaluate the machine translation from Czech to Vietnamese. The source text is "Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou." The machine translation provided is "Xưởng bào răng ở Křižánky trên Žďársko đã trở thành di tích văn hóa." 
+
+The autorater has identified three error spans. Let me go through each one step by step.
+
+First error span: 'sko' with severity 'minor'. Looking at the target text, 'sko' is part of 'Žďársko'. In Vietnamese, 'sko' at the end might not make sense, but I think it's part of the proper noun 'Žďársko', which translates to 'Žďársko' in Vietnamese. Maybe the model struggled with the ending, but it's a minor issue because the meaning is still clear. However, since it's part of a proper noun, maybe it's not an error. So perhaps this span shouldn't be considered an error.
+
+Second error span: 'di tích văn' with severity 'minor'. The target text uses 'di tích văn hóa', which is correct for 'kulturní památkou' (cultural heritage). 'Di tích văn' alone might seem odd, but in context, it's part of the correct phrase. So this might not be an error either. The confidence is low, but the translation is accurate, so this span can be removed.
+
+Third error span: '<s>' with severity 'major'. This refers to the start of the sentence. I don't see any issues with the sentence structure or the start tag. It's properly formatted, so this shouldn't be an error. The model might have misflagged it, so this span should be removed.
+
+After evaluating all spans, none of them are true errors. The machine translation accurately conveys the source text without major or minor issues. So, I'll remove all the predicted error spans.
+</think>
+
+```json
+[]
+```<｜end▁of▁sentence｜>
+None
+dict_keys(['system_id', 'src', 'prediction', 'avg_confidence', 'avg_entropy', 'errors', 'logits', 'subword_probs', 'refined_errors'])
+[{'text': '<s>', 'confidence': 0.45362645387649536, 'entropy': 1.2705998420715332, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'p>Nhà máy mài gỗ ở Křižánky, Žďársko', 'confidence': 0.4088422358036041, 'entropy': 1.2419201135635376, 'severity': 'minor', 'start': 1, 'end': 37}, {'text': 'di tích văn hoá</', 'confidence': 0.4052678048610687, 'entropy': 1.2965418100357056, 'severity': 'minor', 'start': 58, 'end': 76}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Nhà máy mài gỗ ở Křižánky, Žďársko đã được công nhận là di tích văn hoá</p> ```\n
+
+```predicted error spans: [{'text': 'di tích văn hoá</', 'confidence': 0.4052678048610687, 'entropy': 1.2965418100357056, 'severity': 'minor', 'start': 58, 'end': 76}, {'text': '<s>', 'confidence': 0.45362645387649536, 'entropy': 1.2705998420715332, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'p>Nhà máy mài gỗ ở Křižánky, Žďársko', 'confidence': 0.4088422358036041, 'entropy': 1.2419201135635376, 'severity': 'minor', 'start': 1, 'end': 37}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Okay, I need to evaluate the predicted error spans in the machine translation from Czech to Vietnamese. Let's break it down step by step.
+
+First, looking at the source segment: "Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou." This translates to "The sawmill in Křižánky, Žďársko has become a cultural heritage site."
+
+The machine translation provided is: "Nhà máy mài gỗ ở Křižánky, Žďársko đã được công nhận là di tích văn hoá."
+
+Now, examining the predicted error spans:
+
+1. The first span is "di tích văn hoá</" with a confidence of 0.405 and severity 'minor'. The machine translation correctly uses "di tích văn hoá" for "kulturní památkou", which is accurate. The extra "</" at the end might be a formatting issue, but it's not part of the translation. Since it's a minor formatting error, it's correctly classified.
+
+2. The second span is "<s>" with severity 'major'. This seems to indicate a sentence start issue. However, the translation starts correctly with "Nhà máy...", so there's no error here. This span is incorrectly flagged as a major error and should be removed.
+
+3. The third span is "p>Nhà máy mài gỗ ở Křižánky, Žďársko" with severity 'minor'. The translation correctly uses "Nhà máy mài gỗ" for "Pilníkárna". The only issue is the HTML tag "p>", which is part of the formatting, not the translation. Since it's correctly translated, this span is incorrectly flagged and should be removed.
+
+After evaluating, only the first span is a minor error, but it's more of a formatting issue rather than a translation error. Therefore, I should remove all spans as there are no true translation errors.
+</think>
+
+```json
+[]
+```<｜end▁of▁sentence｜>
+None
+dict_keys(['system_id', 'src', 'prediction', 'avg_confidence', 'avg_entropy', 'errors', 'logits', 'subword_probs', 'refined_errors'])
+[{'text': '<s>', 'confidence': 0.44783008098602295, 'entropy': 1.275702714920044, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'p>Xưởng sản xuất giũa ở Křižánky, khu vực Žď', 'confidence': 0.43650951981544495, 'entropy': 1.2234137058258057, 'severity': 'minor', 'start': 1, 'end': 45}, {'text': 'sko', 'confidence': 0.48539498448371887, 'entropy': 1.2149193286895752, 'severity': 'minor', 'start': 47, 'end': 50}, {'text': 'di tích văn hóa</', 'confidence': 0.4396083950996399, 'entropy': 1.2664896249771118, 'severity': 'minor', 'start': 72, 'end': 90}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Xưởng sản xuất giũa ở Křižánky, khu vực Žďársko, đã được công nhận là di tích văn hóa</p> ```\n
+
+```predicted error spans: [{'text': '<s>', 'confidence': 0.44783008098602295, 'entropy': 1.275702714920044, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'di tích văn hóa</', 'confidence': 0.4396083950996399, 'entropy': 1.2664896249771118, 'severity': 'minor', 'start': 72, 'end': 90}, {'text': 'p>Xưởng sản xuất giũa ở Křižánky, khu vực Žď', 'confidence': 0.43650951981544495, 'entropy': 1.2234137058258057, 'severity': 'minor', 'start': 1, 'end': 45}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Alright, let me try to work through this problem step by step. So, I'm supposed to evaluate the predicted error spans in the machine translation from Czech to Vietnamese. The source text is about a pilníkárna (which I think is a grinding mill) becoming a cultural heritage site in Křižánky, Žďársko. The machine translation provided is "Xưởng sản xuất giũa ở Křižánky, khu vực Žďársko, đã được công nhận là di tích văn hóa."
+
+First, I need to look at the predicted error spans and determine if they're accurate and correctly classified. Let's go through each one:
+
+1. The first span is '<s>' with a severity of 'major'. I'm not sure what '<s>' refers to here. It might be a token for sentence start or some encoding issue. I'll check the target text. The target starts correctly with "Xưởng...", so maybe this isn't an error. Perhaps it's just the start tag, so this span might be incorrectly classified as an error.
+
+2. The second span is 'di tích văn hóa</', with severity 'minor'. This looks like part of the sentence ending. The correct Vietnamese would end with "là di tích văn hóa." The target has "di tích văn hóa</", which seems to have an extra closing tag. That might be an error, possibly a minor one because it's a formatting issue rather than a translation mistake.
+
+3. The third span is 'p>Xưởng sản xuất giũa ở Křižánky, khu vực Žď', with severity 'minor'. The target starts with "Xưởng sản xuất giũa..." which seems correct. The span includes the start of the sentence, but I don't see an error here. Maybe the model picked up on something, but it looks correct to me.
+
+Now, I'll evaluate each span:
+
+- The first span is likely not an error. It's just the start token, so I'll remove it.
+- The second span has an extra '</' at the end, which is a formatting error. This affects fluency but doesn't hinder comprehension much, so it's a minor error.
+- The third span doesn't show any error. The translation seems accurate, so I'll remove this span.
+
+So, the only true error is the second span, which is correctly classified as minor. The other two spans are not errors and should be removed.
+</think>
+
+```json
+[
+    {
+        "start": 72,
+        "end": 90,
+        "severity": "minor"
+    }
+]
+```<｜end▁of▁sentence｜>
+None
+dict_keys(['system_id', 'src', 'prediction', 'avg_confidence', 'avg_entropy', 'errors', 'logits', 'subword_probs', 'refined_errors'])
+[{'text': '<s>', 'confidence': 0.45984572172164917, 'entropy': 1.2647761106491089, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'Cơ sở sản xuất máy mài tại Křižánky ở vùng', 'confidence': 0.41544291377067566, 'entropy': 1.230576992034912, 'severity': 'minor', 'start': 3, 'end': 45}, {'text': 'ár', 'confidence': 0.35817116498947144, 'entropy': 1.2996082305908203, 'severity': 'minor', 'start': 48, 'end': 50}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Cơ sở sản xuất máy mài tại Křižánky ở vùng Žďársku trở thành di tích văn hóa</p> ```\n
+
+```predicted error spans: [{'text': 'ár', 'confidence': 0.35817116498947144, 'entropy': 1.2996082305908203, 'severity': 'minor', 'start': 48, 'end': 50}, {'text': '<s>', 'confidence': 0.45984572172164917, 'entropy': 1.2647761106491089, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'Cơ sở sản xuất máy mài tại Křižánky ở vùng', 'confidence': 0.41544291377067566, 'entropy': 1.230576992034912, 'severity': 'minor', 'start': 3, 'end': 45}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Alright, let's tackle this problem step by step. I'm supposed to evaluate the predicted error spans in the machine translation from Czech to Vietnamese and determine if they're accurate and correctly classified. If not, I need to reclassify or remove them.
+
+First, I'll look at the source segment and the machine translation. The source is a Czech sentence about a grinding plant becoming a cultural landmark. The target is in Vietnamese, translating that sentence.
+
+The predicted error spans are three. Let's analyze each one.
+
+1. The first span is '<s>', which is a sentence start token. The confidence is 0.46, entropy 1.26, and severity 'major'. But in the actual translation, the sentence starts correctly with "Cơ sở sản xuất máy mài tại Křižánky ở vùng Žďársku trở thành di tích văn hóa." There's no issue with the start token here, so this is a false positive. I should remove this entry.
+
+2. The second span is 'ár' with confidence 0.36, entropy 1.30, severity 'minor'. Looking at the translation, 'Zhďársk' is transliterated as 'Žďársku'. The 'ár' part in the target might be a typo or a transliteration error. However, in the context, it's part of a proper noun, so maybe it's acceptable. The severity is minor, which makes sense if it's a minor typo. But since it's part of a proper noun, perhaps it's not an error. Alternatively, if it's a mistranslation, it could be minor. I'm not sure, but the predicted severity seems appropriate.
+
+3. The third span is a long phrase from character 3 to 45, with confidence 0.415, entropy 1.23, severity 'minor'. The phrase is "Cơ sở sản xuất máy mài tại Křižánky ở vùng". This seems correctly translated. The machine translation accurately conveys the source meaning. Therefore, this is a false positive and should be removed.
+
+So, after evaluating, only the second span might be a true minor error, but I'm uncertain. However, considering the proper noun context, it's likely not an error. Therefore, all spans are false positives and should be removed.
+</think>
+
+```json
+[]
+```<｜end▁of▁sentence｜>
+None
+dict_keys(['system_id', 'src', 'prediction', 'avg_confidence', 'avg_entropy', 'errors', 'logits', 'subword_probs', 'refined_errors'])
+[{'text': '<s>', 'confidence': 0.44405075907707214, 'entropy': 1.2791273593902588, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'p>Xưởng sản xuất giũa tại', 'confidence': 0.4286184310913086, 'entropy': 1.236616611480713, 'severity': 'minor', 'start': 1, 'end': 26}, {'text': 'řižánky, huyện', 'confidence': 0.4728412330150604, 'entropy': 1.2314594984054565, 'severity': 'minor', 'start': 28, 'end': 42}, {'text': 'ár', 'confidence': 0.3779646158218384, 'entropy': 1.2883691787719727, 'severity': 'minor', 'start': 45, 'end': 47}, {'text': 'di tích văn hóa', 'confidence': 0.42497122287750244, 'entropy': 1.2618238925933838, 'severity': 'minor', 'start': 69, 'end': 85}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Xưởng sản xuất giũa tại Křižánky, huyện Žďár, đã được công nhận là di tích văn hóa.</p> ```\n
+
+```predicted error spans: [{'text': 'ár', 'confidence': 0.3779646158218384, 'entropy': 1.2883691787719727, 'severity': 'minor', 'start': 45, 'end': 47}, {'text': '<s>', 'confidence': 0.44405075907707214, 'entropy': 1.2791273593902588, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'di tích văn hóa', 'confidence': 0.42497122287750244, 'entropy': 1.2618238925933838, 'severity': 'minor', 'start': 69, 'end': 85}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Okay, I'm trying to figure out how to approach this task. So, the user has given me a machine translation from Czech to Vietnamese and some predicted error spans. My job is to evaluate these spans, re-segment or reclassify them if necessary, and then output the corrected JSON array.
+
+First, I'll look at the source segment and the machine translation. The source is in Czech: "Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou." The target is Vietnamese: "Xưởng sản xuất giũa tại Křižánky, huyện Žďár, đã được công nhận là di tích văn hóa."
+
+The predicted error spans are:
+1. 'ár' with minor severity.
+2. '<s>' with major severity.
+3. 'di tích văn hóa' with minor severity.
+
+I need to check each of these spans to see if they're actual errors and if their severity is correctly classified.
+
+Starting with the first span: 'ár' in the target. Looking at the target text, I see "huyện Žďár," which is the Vietnamese adaptation of the Czech place name "Žďársku." The 'ár' part doesn't seem to be an error because it's part of the transliteration. So, this might not be a true error. Maybe the model incorrectly flagged it, so I should remove this span.
+
+Next, the second span: '<s>' which is the start-of-sentence token. In the target, the sentence starts correctly with "Xưởng sản xuất giũa tại Křižánky, huyện Žďár, đã được công nhận là di tích văn hóa." The start token isn't visible in the output, so this might be a false positive. The model might have misidentified this as an error, so I should remove this span as well.
+
+Lastly, the third span: 'di tích văn hóa' which translates to "cultural heritage." Looking at the source, "kulturní památkou" means "cultural monument." The translation is slightly different but still conveys the correct meaning. The term 'di tích văn hóa' is appropriate and doesn't hinder understanding, so the minor severity is correct. I'll keep this span but adjust the start and end indices to accurately reflect the position in the target text.
+
+After reviewing, I decide to remove the first two spans as they're not true errors. The third span is correctly identified as a minor error but needs its indices adjusted to reflect the correct position in the target sentence.
+</think>
+
+```json
+[
+    {
+        "start": 69,
+        "end": 85,
+        "severity": "minor"
+    }
+]
+```<｜end▁of▁sentence｜>
+None
+dict_keys(['system_id', 'src', 'prediction', 'avg_confidence', 'avg_entropy', 'errors', 'logits', 'subword_probs', 'refined_errors'])
+[{'text': '<s>', 'confidence': 0.44883981347084045, 'entropy': 1.2754592895507812, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'Xưởng sản xuất giũa tại', 'confidence': 0.42839315533638, 'entropy': 1.221620798110962, 'severity': 'minor', 'start': 3, 'end': 26}, {'text': 'řižánky, vùng Žďár', 'confidence': 0.44638586044311523, 'entropy': 1.2256172895431519, 'severity': 'minor', 'start': 28, 'end': 46}, {'text': 'di tích văn hóa</', 'confidence': 0.43224602937698364, 'entropy': 1.2758594751358032, 'severity': 'minor', 'start': 60, 'end': 78}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Xưởng sản xuất giũa tại Křižánky, vùng Žďár, đã trở thành di tích văn hóa</p> ```\n
+
+```predicted error spans: [{'text': 'di tích văn hóa</', 'confidence': 0.43224602937698364, 'entropy': 1.2758594751358032, 'severity': 'minor', 'start': 60, 'end': 78}, {'text': '<s>', 'confidence': 0.44883981347084045, 'entropy': 1.2754592895507812, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'řižánky, vùng Žďár', 'confidence': 0.44638586044311523, 'entropy': 1.2256172895431519, 'severity': 'minor', 'start': 28, 'end': 46}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Alright, I'm trying to figure out how to approach this task. So, the user is an annotator for machine translation quality, and they need to evaluate the predicted error spans in a Vietnamese translation of a Czech source text. The predicted spans have some errors flagged, but I need to check if they're accurate and if their severity is correctly classified.
+
+First, I'll look at the source segment in Czech: "Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou." This translates to something like "The Pilnikarnia in Křižánky, in the Žďár region, has become a cultural monument." 
+
+The machine translation provided is: "Xưởng sản xuất giũa tại Křižánky, vùng Žďár, đã trở thành di tích văn hóa." Let's break this down. "Xưởng sản xuất giũa" seems to be a mistranslation of "Pilníkárna." "Pilníkárna" refers to a specific type of workshop, maybe a knife-making workshop, so "xưởng sản xuất giũa" might not be precise. However, it's still understandable, so maybe it's a minor error.
+
+Next, looking at the predicted error spans:
+
+1. The first span is "di tích văn hóa</" with a severity of minor. This seems correct because "di tích văn hóa" is the accurate translation for "kulturní památkou." The trailing slash might be an issue, but it's minor.
+
+2. The second span is "<s>" with severity major. This is the start tag, which shouldn't be part of the translation. However, it's just a single character at the beginning, so it's more of a minor issue because it doesn't affect comprehension much.
+
+3. The third span is "řižánky, vùng Žďár" with severity minor. The correct translation should be "Křižánky, vùng Žďár." The missing accents on "ř" and "ž" are minor spelling errors but don't hinder understanding.
+
+So, I think the severities are mostly correct. The major tag for "<s>" might be a bit too harsh since it's just a formatting issue. I'll change that to minor. The other spans are correctly classified, so I'll keep them as minor. I don't see any need to resegment the spans; they're appropriately identified.
+</think>
+
+```json
+[
+    {
+        "start": 60,
+        "end": 78,
+        "severity": "minor"
+    },
+    {
+        "start": 0,
+        "end": 0,
+        "severity": "minor"
+    },
+    {
+        "start": 28,
+        "end": 46,
+        "severity": "minor"
+    }
+]
+```<｜end▁of▁sentence｜>
+None
+dict_keys(['system_id', 'src', 'prediction', 'avg_confidence', 'avg_entropy', 'errors', 'logits', 'subword_probs', 'refined_errors'])
+[{'text': '<s>', 'confidence': 0.4473326802253723, 'entropy': 1.2775897979736328, 'severity': 'major', 'start': 0, 'end': 0}, {'text': '>Xưởng làm dũa ở Křižánky thuộc vùng', 'confidence': 0.4402149021625519, 'entropy': 1.2039507627487183, 'severity': 'minor', 'start': 2, 'end': 38}, {'text': 'thành di tích văn hóa</', 'confidence': 0.46952471137046814, 'entropy': 1.2217843532562256, 'severity': 'minor', 'start': 50, 'end': 74}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Xưởng làm dũa ở Křižánky thuộc vùng Žďársko trở thành di tích văn hóa</p> ```\n
+
+```predicted error spans: [{'text': '<s>', 'confidence': 0.4473326802253723, 'entropy': 1.2775897979736328, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'thành di tích văn hóa</', 'confidence': 0.46952471137046814, 'entropy': 1.2217843532562256, 'severity': 'minor', 'start': 50, 'end': 74}, {'text': '>Xưởng làm dũa ở Křižánky thuộc vùng', 'confidence': 0.4402149021625519, 'entropy': 1.2039507627487183, 'severity': 'minor', 'start': 2, 'end': 38}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Okay, so I need to evaluate the predicted error spans in the machine translation from Czech to Vietnamese. Let me break it down step by step.
+
+First, I'll look at the source segment: "Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou." This translates to "The grindstone factory in Křižánky in the Žďársko region has become a cultural monument."
+
+The machine translation provided is: "Xưởng làm dũa ở Křižánky thuộc vùng Žďársko trở thành di tích văn hóa." Let's analyze this.
+
+Looking at the predicted error spans:
+
+1. The first span is '<s>', which is a start tag. The confidence is 0.447, entropy 1.277, severity 'major'. But in the context of the sentence, the start tag doesn't seem to be an error. It's just part of the structure, so this might be a false positive. I should remove this entry.
+
+2. The second span is 'thành di tích văn hóa</', confidence 0.469, entropy 1.221, severity 'minor'. The phrase 'trở thành di tích văn hóa' correctly translates to 'has become a cultural monument'. However, the closing tag '</' at the end might be an issue. But in the target text, it's correctly placed, so this might not be an error. Maybe the model is confused, but it's not a true error. I should remove this entry too.
+
+3. The third span is '>Xưởng làm dũa ở Křižánky thuộc vùng', confidence 0.440, entropy 1.203, severity 'minor'. The translation starts with '>Xưởng làm dũa ở Křižánky thuộc vùng', which correctly translates the beginning of the sentence. The model might be flagging this due to the opening tag '>', but it's part of the structure and not an error. So, this should also be removed.
+
+After evaluating each span, none of them represent true errors. The machine translation accurately conveys the source meaning without any major or minor issues. Therefore, I should return an empty array.
+</think>
+
+[]<｜end▁of▁sentence｜>
+None
+dict_keys(['system_id', 'src', 'prediction', 'avg_confidence', 'avg_entropy', 'errors', 'logits', 'subword_probs', 'refined_errors'])
+[]
+[{'text': '<s>', 'confidence': 0.43111053109169006, 'entropy': 1.2912150621414185, 'severity': 'major', 'start': 0, 'end': 0}, {'text': '>Pilní', 'confidence': 0.3970365524291992, 'entropy': 1.2768759727478027, 'severity': 'minor', 'start': 2, 'end': 8}, {'text': 'tại Křižánkes thuộc vùng', 'confidence': 0.4506920278072357, 'entropy': 1.2462164163589478, 'severity': 'minor', 'start': 13, 'end': 38}, {'text': 'ár', 'confidence': 0.38834163546562195, 'entropy': 1.2834744453430176, 'severity': 'minor', 'start': 41, 'end': 43}, {'text': 'di tích văn hóa', 'confidence': 0.4762992262840271, 'entropy': 1.2436901330947876, 'severity': 'minor', 'start': 64, 'end': 80}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Pilníkárna tại Křižánkes thuộc vùng Žďár đã được công nhận là di tích văn hóa</p>```\n
+
+```predicted error spans: [{'text': '<s>', 'confidence': 0.43111053109169006, 'entropy': 1.2912150621414185, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'ár', 'confidence': 0.38834163546562195, 'entropy': 1.2834744453430176, 'severity': 'minor', 'start': 41, 'end': 43}, {'text': '>Pilní', 'confidence': 0.3970365524291992, 'entropy': 1.2768759727478027, 'severity': 'minor', 'start': 2, 'end': 8}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
+Alright, let's tackle this problem step by step. I'm supposed to evaluate the predicted error spans in the machine translation from Czech to Vietnamese. The source segment is "<p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>", and the machine translation is "<p>Pilníkárna tại Křižánkes thuộc vùng Žďár đã được công nhận là di tích văn hóa</p>". The predicted error spans are provided, and I need to assess each one.
+
+First, I'll look at each predicted error span:
+
+1. The first span is '<s>', which is the start tag. The confidence is 0.43, entropy 1.29, and severity 'major'. I'm not sure what '<s>' refers to here. In translation, sometimes tags like '<s>' are used as sentence start markers. If it's part of the HTML, it might not be an error. I should check if this is a valid part of the translation or if it's an error. Since it's a tag, it might not be an error at all. So, maybe this span should be removed.
+
+2. The second span is 'ár', with confidence 0.39, entropy 1.28, severity 'minor'. Looking at the target translation, 'Křižánkes' is translated as 'Křižánkes'. The original source has 'Křižánkách'. The 'ách' ending in Czech is a locative case, which in Vietnamese might not have a direct equivalent. The translation uses 'Křižánkes', which seems like a transliteration without the correct ending. The 'ár' part might be a mistake in the transliteration, but it's a minor issue since the overall meaning is still clear.
+
+3. The third span is '>Pilní', confidence 0.40, entropy 1.28, severity 'minor'. The target starts with '<p>Pilníkárna...'. The source is 'Pilníkárna', which is a proper noun, likely the name of a place or building. The translation keeps 'Pilníkárna' as is, which is correct. The '>Pilní' part seems like it's capturing the start of the tag and the word. Since the word is correctly translated, this might not be an error. The '>Pil' part is part of the HTML tag, so it's not an error in the translation content.
+
+Now, evaluating each:
+
+- The first span '<s>' is likely part of the HTML structure and not an error. So, it should be removed.
+- The second span 'ár' is a minor error because the ending might be incorrect, but it doesn't hinder comprehension.
+- The third span '>Pilní' is not an error because the word is correctly translated, and the HTML tag is separate.
+
+Therefore, only the second span should be kept, classified as minor. The others are either not errors or part of the structure.
+</think>
+
+```json
+[
+    {
+        "start": 41,
+        "end": 43,
+        "severity": "minor"
+    }
+]
+```<｜end▁of▁sentence｜>
+None
+dict_keys(['system_id', 'src', 'prediction', 'avg_confidence', 'avg_entropy', 'errors', 'logits', 'subword_probs', 'refined_errors'])
+[{'text': '<s>', 'confidence': 0.45215731859207153, 'entropy': 1.2725105285644531, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'Xưởng làm giũa ở', 'confidence': 0.4327278435230255, 'entropy': 1.1860111951828003, 'severity': 'minor', 'start': 3, 'end': 19}, {'text': 'řižánky, vùng Ž', 'confidence': 0.4253380000591278, 'entropy': 1.2238479852676392, 'severity': 'minor', 'start': 21, 'end': 36}, {'text': 'sko', 'confidence': 0.44534626603126526, 'entropy': 1.2488999366760254, 'severity': 'minor', 'start': 39, 'end': 42}, {'text': 'di tích văn hóa</', 'confidence': 0.38307031989097595, 'entropy': 1.3033427000045776, 'severity': 'minor', 'start': 61, 'end': 79}]
+
+
+You are an annotator for the quality of machine translation. Your task is to reflect on the predicted
+
+error spans produced by an autorater given the following source and target segments, 
+
+and re-segment and/or re-classify these spans in terms of their severity of errors should they be incorrect
+
+```source:ces``` \n
+
+```source segment: <p>Pilníkárna v Křižánkách na Žďársku se stala kulturní památkou</p>
+```\n
+
+```target language: vie```\n
+
+```machine translation: <p>Xưởng làm giũa ở Křižánky, vùng Žďársko, được công nhận là di tích văn hóa</p> ```\n
+
+```predicted error spans: [{'text': 'di tích văn hóa</', 'confidence': 0.38307031989097595, 'entropy': 1.3033427000045776, 'severity': 'minor', 'start': 61, 'end': 79}, {'text': '<s>', 'confidence': 0.45215731859207153, 'entropy': 1.2725105285644531, 'severity': 'major', 'start': 0, 'end': 0}, {'text': 'sko', 'confidence': 0.44534626603126526, 'entropy': 1.2488999366760254, 'severity': 'minor', 'start': 39, 'end': 42}]```
+
+
+
+\n
+
+
+
+#### Guidelines and Error Taxonomy ######
+
+The categories of errors are: accuracy
+
+(addition, mistranslation, omission, untranslated text), fluency (character encoding, grammar,
+
+inconsistency, punctuation, register, spelling),
+
+locale convention (currency, date, name, telephone, or time format)
+
+style (awkward), terminology (inappropriate for context, inconsistent use), non-translation,
+
+other, or no-error.\n
+
+
+
+Each error is classified as one of two categories: major, minor.
+
+Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
+
+the text is trying to say is still understandable. Minor errors are technically errors,
+
+but do not disrupt the flow or hinder comprehension. \n
+
+
+
+### Your task #######
+
+Make sure to only evaluate the given error spans given the machine translation in vie, and the source segment in ces.
+
+
+
+Think step-by-step:
+
+1. For each entry in the predicted spas, evaluyated the translated text identified by the autorater as a mistranslation, and whether it is a true mistranslation error. 
+
+2. If this is a true error and its severity has been misclassified, reclassify its severity. 
+
+3. If the span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
+
+4. If the span is too long and needs to be resegmented into additional error spans, ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {'start': int, 'end':int, 'severity':str}
+
+
+
+
+
+Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and
+
+must have exactly these keys: "start", "end", "severity". start' and 'end' are character indices of the identified error span from the target language translation, and "severity" is one of
+
+ "major", or "minor". If there are no errors, return an empty array [].
+
+You MUST only output the JSON array, with no other text. 
+Setting `pad_token_id` to `eos_token_id`:None for open-end generation.
