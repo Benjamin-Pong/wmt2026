@@ -288,10 +288,10 @@ class XCOMETMetricLogitsAdj(XCOMETMetric):
                 #print(f"mt_mask_shape:{mt_mask.shape}")
                 #print(f"logits__shape:{logits.shape}")
                 #print(f"subword_probs_shape:{subword_probs.shape}")
-                mt_mask = mt_mask[:, :seq_len]
+                mt_mask_1 = mt_mask[:, :seq_len]
                 #print(f"sliced mask: {mt_mask.shape}")
-                assert subword_probs.shape[1] == logits.shape[1] == mt_mask.shape[1]
-                assert subword_probs.shape[0] == logits.shape[0] == mt_mask.shape[0]
+                assert subword_probs.shape[1] == logits.shape[1] == mt_mask_1.shape[1]
+                assert subword_probs.shape[0] == logits.shape[0] == mt_mask_1.shape[0]
                 #trimmed_subwords, trimmed_logits, t_tokens, token_ids = trim(subword_probs, logits, mt_offsets, input_ids, self.encoder.tokenizer)
                 error_spans = self.decode(
                     subword_probs, batch[0]["input_ids"], batch[0]["mt_offsets"]
@@ -305,11 +305,18 @@ class XCOMETMetricLogitsAdj(XCOMETMetric):
                 trimmed_logits = logits * mt_mask
                 trimmed_subword_probs = subword_probs * mt_mask
     
-                avg_confidence = compute_average_confidence(subword_probs, mt_mask)
-                avg_entropy = compute_average_shannon_entropy(subword_probs, mt_mask)
+                avg_confidence = compute_average_confidence(subword_probs, mt_mask_1)
+                avg_entropy = compute_average_shannon_entropy(subword_probs, mt_mask_1)
                 assert not torch.isnan(avg_entropy).any(), f"NaN in avg entropy: {avg_entropy}"
                 assert not torch.isnan(avg_confidence).any(), f"NaN in avg entropy: {avg_confidence}"
-               
+
+                #get tokens
+                tokenizer = self.encoder.tokenizer
+                input_ids_ = batch[0]['input_ids'][:, :seq_len] #(B,S)
+                tokens = get_mt_tokens(mt_mask, input_ids)
+                def get_mt_tokens(mt_mask, input_ids, tokenizer):
+                    tokens = []
+                    pass
                 batch_prediction = Prediction(
                     scores=final_scores,
                     metadata=Prediction(

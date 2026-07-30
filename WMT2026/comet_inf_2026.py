@@ -104,7 +104,7 @@ def score(human_eval, xcomet, submission_file, experiment_file, mode):
                         if error_span['severity']=='critical':
                             error_span['severity']= 'major'
 
-                scores_exp[system]={'system_id': system, 'prediction':prediction, 'avg_confidence':avg_conf[idx], 'avg_entropy': avg_ent[idx], 'errors':error_span_clean_exp, 'logits': logits[idx], 'subword_probs': subword_probs[idx]}
+                scores_exp[system]={'system_id': system, 'src': src_text,'prediction':prediction, 'avg_confidence':avg_conf[idx], 'avg_entropy': avg_ent[idx], 'errors':error_span_clean_exp, 'logits': logits[idx], 'subword_probs': subword_probs[idx]}
 
                 scores_submission[system]={'errors': error_span_clean_sub, 'omission': None}
         
