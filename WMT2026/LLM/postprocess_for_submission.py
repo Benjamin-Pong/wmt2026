@@ -16,41 +16,52 @@ def concat_files():
 
     pass
 
-def unify_error_spans():
-    pass
-
 def postprocess(data):
     '''
     Postprocesses each jsonl line to remove all the unwanted fields for submission
     '''
-    unwanted_fields_in_system = ['avg_confidence', 'avg_entropy','logits', 'subword_probs']
-    unwanted_fields_in_errors = ['text', 'confidence', 'entropy']
-    def remove_unwanted_fields_per_system(unwanted_fields_in_system, line):
+    
+    def remove_unwanted_fields_per_system(line):
+        unwanted_fields_in_system = ['avg_confidence', 'avg_entropy','logits', 'subword_probs', 'reasoing_trace']
         for field in unwanted_fields_in_system: 
             for system in line['task1_pred']:
-                line['task1_pred'][system].pop(field)
+                if field in line['task1_pred'][system]:
+                    line['task1_pred'][system].pop(field)
+                line['task1_pred'][system]['old_errors'] = line['task1_pred'][system].pop('errors')
+                line['task1_pred'][system]['errors'] = line['task1_pred'][system].pop('refined_errors')
+                line['task1_pred'][system].pop('old_errors')
+                line['task1_pred'][system]['omission']= None
+
+                assert sorted(list(line['task1_pred'][system].keys())) == sorted(['errors', 'omission'])
         return line
 
-    def remove_unwanted_fields_in_error(unwanted_fields_in_errors, line):
-        
+
+
+        return line
+
+    def remove_unwanted_fields_in_error(line):
+        unwanted_fields_in_errors = ['text', 'confidence', 'entropy']
         for system in line['task1_pred']:
             if line['task1_pred'][system]['errors']:
                 for error_span in line['task1_pred'][system]['errors']:
                     for field in unwanted_fields_in_errors:
-                        error_span.pop(field)
+                        if field in error_span:
+                            error_span.pop(field)
 
-            line['task1_pred'][system]['errors'] = unify_error_spans(line['task1_pred'][system]['errors'], line['task1_pred'][system]['refined_errors'])
+                    assert sorted(list(error_span.keys())) == sorted(['start', 'end', 'severity'])
                 
         return line
 
-    def unify_error_spans(errors, refined_errors):
+    def rename_and_remove(line):
         '''
-        this function unifies original error spans and the refined error spans
+        rename refined errors to old_errors
+        rename refined errors to errors
+        remove old errors entry
         '''
-        fo
+        
         
 
-
+        
     for line in data:
         
         line = remove_unwanted_fields_per_system(unwanted_fields_in_system, line)

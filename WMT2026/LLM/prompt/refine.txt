@@ -19,9 +19,8 @@ style (awkward), terminology (inappropriate for context, inconsistent use), non-
 other, or no-error.\n
 
 Each error is classified as one of two categories: major, minor.
-Critical errors inhibit comprehension of the text. Major errors disrupt the flow, but what
-the text is trying to say is still understandable. Minor errors are technically errors,
-but do not disrupt the flow or hinder comprehension. \n
+ Major errors inhibit comprehension of the text and/or disrupt the flow. Minor errors are technically errors,
+but do not disrupt the flow or hinder comprehension. Formatting errors alone do not hinder comprehension. \n
 
 ### Your task #######
 Make sure to only evaluate the predicted error spans given the machine translation in {target_language}, and the source segment in {source_language}.
@@ -31,7 +30,7 @@ Think step-by-step:
 For each entry, evaluate whether the text is a true mistranslation error, whilst refering to the source segment as well.
 2. If this is a true error and its severity has been misclassified, reclassify its severity. 
 3. If the entire span is not a true error, meaning no mistranslations at all, remove its json entry from the predicted span array.
-4. If only portions of the span are errors,  resegment the span into subspans, and ensure that the newly segmented entries follow the same format containing only the following keys with the associated values of the following types {{'text': str, 'start': int, 'end':int, 'severity':str}}
+4. If only portions of the span are errors, resegment the span into subspans, and include the newly segmented entries instead of the original error span, and follow the same format containing only the following keys with the associated values of the following types {{'text': str, 'start': int, 'end':int, 'severity':str}}
 
 
 Produce a JSON array of objects, similar to the input error spans. Each object represents a single error and

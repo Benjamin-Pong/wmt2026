@@ -7,6 +7,7 @@ import os
 import torch
 import re
 import copy
+import gc
 
 '''
 LLMJudge QE metric that takes the outputs of xcomet and improves/refines the annotations
@@ -46,8 +47,38 @@ def inference(model, tokenizer, prompt) -> List[Dict]:
         return_tensors="pt",
     ).to(model.device)
 
-    outputs = model.generate(**inputs, max_new_tokens=100000)
+    outputs = model.generate(**inputs, max_new_tokens=6000)
     return tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:])
+
+def inference_batched(model, tokenizer, prompts) -> List[str]:
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "left"   # REQUIRED for correct batched decoder generation
+
+    # one templated string per prompt (tokenize=False → we batch-tokenize next)
+    texts = [
+        tokenizer.apply_chat_template(
+            [{"role": "user", "content": p}],
+            add_generation_prompt=True,
+            tokenize=False,
+        )
+        for p in prompts
+    ]
+
+    # pad all prompts to the same length together
+    inputs = tokenizer(texts, return_tensors="pt", padding=True).to(model.device)
+
+    with torch.inference_mode():
+        outputs = model.generate(**inputs, max_new_tokens=2500)
+
+    # strip the (padded) prompt off every row, then decode each row
+    gen = outputs[:, inputs["input_ids"].shape[-1]:]
+    res = tokenizer.batch_decode(gen) 
+    
+    print(len(res))
+    assert len(res)==len(prompts)
+    
+    return res  # list, len == len(prompts)
 
 def parse_response(raw_output):
     '''
@@ -84,7 +115,8 @@ def remove_unwanted_fields_in_error(errors):
     unwanted_fields_in_errors = ['text', 'confidence', 'entropy']
     for error_span in errors:
         for field in unwanted_fields_in_errors:
-            error_span.pop(field)
+            if field in error_span:
+                error_span.pop(field)
     return errors
 
 def refine_25(model, tokenizer, data,prompt,k, refined_results):
@@ -110,18 +142,26 @@ def refine_25(model, tokenizer, data,prompt,k, refined_results):
                 system_scores[system]['reasoning_trace']=corrected_topk_spans
                 print("reasoning trace", corrected_topk_spans)
                 corrected_topk_spans = parse_response(corrected_topk_spans) #list of dicts
+                if  corrected_topk_spans is None:
+                    corrected_topk_spans = top_k_spans
+                
                 print("parsed", corrected_topk_spans) 
                 system_scores[system]['corrected_topk_spans']=corrected_topk_spans
+                
 
                 cleaned_corrected_topk_spans = remove_unwanted_fields_in_error(corrected_topk_spans)
                 cleaned_unchanged_spans = remove_unwanted_fields_in_error(unchanged_spans)
+                refined_errors = cleaned_unchanged_spans + cleaned_corrected_topk_spans 
 
-                system_scores[system]['refined_errors'] = cleaned_unchanged_spans.extend(cleaned_corrected_topk_spans)
-                print(system_scores[system]['refined_errors'])
+
+                system_scores[system]['refined_errors'] = refined_errors
+                print("refined errors", system_scores[system]['refined_errors'])
                 print(system_scores[system].keys())
             line['task_pred'] = system_scores       
 
             f.write(json.dumps(line, ensure_ascii=False)+'\n')
+
+
 
 
 
@@ -160,35 +200,215 @@ def refine_26(model, tokenizer, data,prompt,k, refined_results):
                 system_scores[system]['reasoning_trace']=corrected_topk_spans
                 print("reasoning trace", corrected_topk_spans)
                 corrected_topk_spans = parse_response(corrected_topk_spans) #list of dicts
+                if  corrected_topk_spans is None:
+                    corrected_topk_spans = top_k_spans
+
                 print("parsed", corrected_topk_spans) 
                 system_scores[system]['corrected_topk_spans']=corrected_topk_spans
 
                 cleaned_corrected_topk_spans = remove_unwanted_fields_in_error(corrected_topk_spans)
                 cleaned_unchanged_spans = remove_unwanted_fields_in_error(unchanged_spans)
 
-                
+                refined_errors = cleaned_unchanged_spans + cleaned_corrected_topk_spans 
 
-                system_scores[system]['refined_errors'] = cleaned_unchanged_spans.extend(cleaned_corrected_topk_spans)
-                print(system_scores[system]['refined_errors'])
 
-                
-
+                system_scores[system]['refined_errors'] = refined_errors
+                print("refined_errors:", (system_scores[system]['refined_errors']))
                 print(system_scores[system].keys())
             line['task_pred'] = system_scores       
 
             f.write(json.dumps(line, ensure_ascii=False)+'\n')
 
-                
+def refine_batched_26(model, tokenizer, data,prompt,k, refined_results):
+    '''
+    checks/edge cases:
+    1. sortedness
+    2. top-k logic: what if the list has no errors, what if the list has less than k members?
+    2. all fields are extracted correctly
+
+
+    Outputs final set of data for evaluation (2026 specific format only!)
+    do I want this or do I want some error analyses??
+    '''
+    with open(refined_results, 'w', encoding='utf-8') as f:
+
+        for line in data:
+            #extract all the required fields for a sample to be injected into a prompt
+            #per system per line
+            src_lang = line['item_id'].split("###")[1].split('_')[1]
+            tgt_lang = line['item_id'].split('###')[2].split('_')[1]
+            
+            system_scores = line["task1_pred"]
+            prompts = []
+            for idx, system in enumerate(system_scores):
+                prediction = system_scores[system]['prediction']
+                src_text = system_scores[system]['src']
+                error_spans = system_scores[system]['errors']
+                #print(error_spans)
+         
+                ranked_error_spans = sorted(error_spans, key=lambda d:d['entropy'], reverse=True)
+                top_k_spans = ranked_error_spans[:k+1] #these spans will be shown to llm prompt
+                unchanged_spans = ranked_error_spans[k+1:] #for unification later
+                curr_prompt = prompt.format(source_language=src_lang, target_language=tgt_lang, source_segment=src_text, target_segment=prediction, xcomet_error_spans=top_k_spans)
+                prompts.append(curr_prompt)
+
+            corrected_topk_spans_batched = inference_batched(model, tokenizer, prompts)
+            print("batched!", len(corrected_topk_spans_batched), len(system_scores))
+            assert len(corrected_topk_spans_batched) == len(system_scores)
+
+            for idx, system in enumerate(system_scores):
+                prediction = system_scores[system]['prediction']
+                src_text = system_scores[system]['src']
+                error_spans = system_scores[system]['errors']
+                #print(error_spans)
+            
+                ranked_error_spans = sorted(error_spans, key=lambda d:d['entropy'], reverse=True)
+                top_k_spans = ranked_error_spans[:k+1] #these spans will be shown to llm prompt
+                unchanged_spans = ranked_error_spans[k+1:]
+
+            
+                corrected_topk_spans= corrected_topk_spans_batched[idx]
+                system_scores[system]['reasoning_trace']=corrected_topk_spans
+                print("reasoning trace", corrected_topk_spans)
+                corrected_topk_spans = parse_response(corrected_topk_spans) #list of dicts
+                if corrected_topk_spans is None:
+                    corrected_topk_spans = top_k_spans
+
+                print("parsed", corrected_topk_spans) 
+                system_scores[system]['corrected_topk_spans']=corrected_topk_spans
+
+                cleaned_corrected_topk_spans = remove_unwanted_fields_in_error(corrected_topk_spans)
+                cleaned_unchanged_spans = remove_unwanted_fields_in_error(unchanged_spans)
+
+                refined_errors = cleaned_unchanged_spans + cleaned_corrected_topk_spans 
+
+
+                system_scores[system]['refined_errors'] = refined_errors
+                print("refined_errors:", (system_scores[system]['refined_errors']))
+                print(system_scores[system].keys())
+            line['task_pred'] = system_scores       
+
+            f.write(json.dumps(line, ensure_ascii=False)+'\n')   
+def refine_batched_v2_26(model, tokenizer, data, prompt, k, refined_results, batch_size=12):
+    # PASS 1 — flatten ALL (line, system) pairs across the whole dataset
+    all_prompts, jobs = [], []
+    total_systems = 0
+    for line in data:
+        src_lang = line['item_id'].split("###")[1].split('_')[1]
+        tgt_lang = line['item_id'].split('###')[2].split('_')[1]
+        total_systems += len(line['task1_pred'])
+        for system in line["task1_pred"]:
+            s = line["task1_pred"][system]
+            ranked = sorted(s['errors'], key=lambda d: d['entropy'], reverse=True)
+            top_k, unchanged = ranked[:k+1], ranked[k+1:]
+            all_prompts.append(prompt.format(
+                source_language=src_lang, target_language=tgt_lang,
+                source_segment=s['src'], target_segment=s['prediction'],
+                xcomet_error_spans=top_k))
+            jobs.append((line, system, top_k, unchanged))
+
+    # PASS 2 — chunk the FLAT list; every chunk is a real batch of `batch_size`
+    print(total_systems, len(all_prompts))
+    assert total_systems == len(all_prompts)
+    outputs = []
+    for i in range(0, len(all_prompts), batch_size):
+        outputs.extend(inference_batched(model, tokenizer, all_prompts[i:i+batch_size]))
+        torch.cuda.empty_cache(); gc.collect()
+
+    # PASS 3 — scatter back
+    for (line, system, top_k, unchanged), raw in zip(jobs, outputs):
+        s = line["task1_pred"][system]
+        s['reasoning_trace'] = raw
+        parsed = parse_response(raw)
+        if parsed is None:
+            parsed = top_k
+        s['corrected_topk_spans'] = parsed
+        s['refined_errors'] = (remove_unwanted_fields_in_error(unchanged)
+                               + remove_unwanted_fields_in_error(parsed))
+
+    with open(refined_results, 'w', encoding='utf-8') as f:
+        for line in data:
+            line['task_pred'] = line["task1_pred"]
+            f.write(json.dumps(line, ensure_ascii=False) + '\n')
+            f.flush()
+            os.fsync(f.fileno())
+            print(f"line {i} written, file now {os.path.getsize(refined_results):,} bytes", flush=True)
+
+from vllm import LLM, SamplingParams
+
+def refine_vllm_26(llm, data, prompt, k, refined_results):
+    # PASS 1 — flatten every (line, system) into one prompt + back-reference
+    convos, jobs = [], []
+    for line in data:
+        src_lang = line['item_id'].split("###")[1].split('_')[1]
+        tgt_lang = line['item_id'].split('###')[2].split('_')[1]
+        for system in line["task1_pred"]:
+            s = line["task1_pred"][system]
+            ranked = sorted(s['errors'], key=lambda d: d['entropy'], reverse=True)
+            top_k, unchanged = ranked[:k], ranked[k+1:]
+            curr = prompt.format(
+                source_language=src_lang, target_language=tgt_lang,
+                source_segment=s['src'], target_segment=s['prediction'],
+                xcomet_error_spans=top_k)
+            convos.append([{"role": "user", "content": curr}])
+            jobs.append((line, system, top_k, unchanged))
+
+    assert len(convos) == len(jobs), f"collection mismatch: {len(convos)} convos vs {len(jobs)} jobs"
+
+    # PASS 2 — ONE call. vLLM continuous-batches all 12k internally.
+    sampling = SamplingParams(temperature=0.0, top_p=0.95, max_tokens=2500)
+    outputs = llm.chat(convos, sampling)   # applies the chat template for you
+
+    assert len(outputs) == len(jobs), f"output mismatch: {len(outputs)} outputs vs {len(jobs)} jobs"
+
+    # PASS 3 — scatter back (order preserved: outputs[i] ↔ jobs[i])
+    for (line, system, top_k, unchanged), out in zip(jobs, outputs):
+        raw = out.outputs[0].text
+        s = line["task1_pred"][system]
+        s['reasoning_trace'] = raw
+        parsed = parse_response(raw)
+        if parsed is None:
+            parsed = top_k
+        s['corrected_topk_spans'] = parsed
+        s['refined_errors'] = (remove_unwanted_fields_in_error(unchanged)
+                               + remove_unwanted_fields_in_error(parsed))
+
+    # PASS 4 — write
+    with open(refined_results, 'w', encoding='utf-8') as f:
+        for i, line in enumerate(data):
+            line['task_pred'] = line["task1_pred"]
+            f.write(json.dumps(line, ensure_ascii=False) + '\n')
+            f.flush()
+            os.fsync(f.fileno())
+            print(f"line {i} written, file now {os.path.getsize(refined_results):,} bytes", flush=True)
 def main():
     args = parse_args()
+    '''
     tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(args.model, trust_remote_code=True, torch_dtype=torch.bfloat16,   # half precision — ~64GB for 32B, fits your 80GB
     device_map="auto")
+    '''
+    args = parse_args()
+    from vllm import LLM
+
+    model = LLM(
+        model=args.model,
+        dtype="bfloat16",
+        gpu_memory_utilization=0.90,
+        max_model_len=32700,
+        enable_prefix_caching=True,
+        trust_remote_code=True,
+    )
     
     data = get_data(args.input)
     prompt = load_prompt(args.prompt)
     if args.cycle=="wmt2026":
-        refine_26(model, tokenizer, data[0:10],prompt, 5, args.refined_results)
+        #refine_batched_26(model, tokenizer, data[0:20],prompt, 3, args.refined_results)
+        refine_vllm_26(model, data,prompt, 5, args.refined_results)
+        print("batched")
+    else:
+        refine_25(model, tokenizer, data[0:1],prompt, 3, args.refined_results)
+
     
 
 if __name__ == "__main__":
