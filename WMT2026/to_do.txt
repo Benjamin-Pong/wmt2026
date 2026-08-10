@@ -1,1 +1,4 @@
-https://www.emergentmind.com/topics/logit-adjustment
+1. Get results for refined json - wmt2025 and update the paper
+2. Think about how to investigate the disproportionate boost in recall/rrecision? - does refining help??
+3. experiment with prompt optimization? (JEPA)
+4. 

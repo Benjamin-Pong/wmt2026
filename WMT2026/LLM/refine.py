@@ -4,6 +4,8 @@ import argparse
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from typing import List, Dict
 import os
+os.environ["VLLM_USE_FLASHINFER_SAMPLER"] = "0"   # must be set before vllm is imported
+from vllm import LLM, SamplingParams
 import torch
 import re
 import copy
@@ -334,7 +336,7 @@ def refine_batched_v2_26(model, tokenizer, data, prompt, k, refined_results, bat
             os.fsync(f.fileno())
             print(f"line {i} written, file now {os.path.getsize(refined_results):,} bytes", flush=True)
 
-from vllm import LLM, SamplingParams
+
 
 def refine_vllm_26(llm, data, prompt, k, refined_results):
     # PASS 1 — flatten every (line, system) into one prompt + back-reference
@@ -376,7 +378,86 @@ def refine_vllm_26(llm, data, prompt, k, refined_results):
     # PASS 4 — write
     with open(refined_results, 'w', encoding='utf-8') as f:
         for i, line in enumerate(data):
-            line['task_pred'] = line["task1_pred"]
+            #line['task_pred'] = line["task1_pred"]
+            f.write(json.dumps(line, ensure_ascii=False) + '\n')
+            f.flush()
+            os.fsync(f.fileno())
+            print(f"line {i} written, file now {os.path.getsize(refined_results):,} bytes", flush=True)
+
+def refine_vllm_25(llm, data, prompt, k, refined_results):
+    # PASS 1 — build one prompt per (line, system)
+    convos, jobs = [], []
+    for line in data:
+        src_lang = line['source_lang']
+        tgt_lang = line['target_lang']
+        source_segment = line['source_segment']
+        for system in line["scores"]:
+            target_segment = line["scores"][system]['prediction']
+            ranked = sorted(line["scores"][system]['error_span'],
+                            key=lambda d: d['entropy'], reverse=True)
+            top_k, unchanged = ranked[:k], ranked[k:]
+            wanted_labels = {'start', 'end', 'text', 'severity'}
+            for span in top_k:
+                for key in list(span):
+                    if key not in wanted_labels:
+                        span.pop(key)
+            curr = prompt.format(
+                source_language=src_lang, target_language=tgt_lang,
+                source_segment=source_segment, target_segment=target_segment,
+                xcomet_error_spans=top_k)
+            convos.append([{"role": "user", "content": curr}])
+            jobs.append((line, system, top_k, unchanged))
+
+    assert len(convos) == len(jobs)
+
+    sampling = SamplingParams(temperature=0.0, top_p=0.95, max_tokens=2000)
+
+    # PASS 2 — measure each prompt in TOKENS, skip the ones that won't fit
+    tok = llm.get_tokenizer()
+    LIMIT = 32700 - 2000 - 200   # model limit minus output room minus slack
+
+    def token_len(conv):
+        text = tok.apply_chat_template(conv, add_generation_prompt=True, tokenize=False)
+        return len(tok(text, add_special_tokens=False)["input_ids"])
+
+    keep_convos, keep_jobs = [], []
+    skipped = 0
+    biggest = 0
+    for c, j in zip(convos, jobs):
+        n = token_len(c)
+        biggest = max(biggest, n)
+        if n <= LIMIT:
+            keep_convos.append(c)
+            keep_jobs.append(j)
+        else:
+            skipped += 1
+            line, system, top_k, unchanged = j
+            s = line["scores"][system]
+            s['reasoning_trace'] = ""
+            s['corrected_topk_spans'] = top_k
+            s['refined_errors'] = (remove_unwanted_fields_in_error(unchanged)
+                                   + remove_unwanted_fields_in_error(top_k))
+
+    print(f"total={len(convos)} kept={len(keep_convos)} skipped={skipped} biggest_tokens={biggest} LIMIT={LIMIT}")
+
+    # PASS 3 — one call on the prompts that fit
+    outputs = llm.chat(keep_convos, sampling)
+    assert len(outputs) == len(keep_jobs)
+
+    for (line, system, top_k, unchanged), out in zip(keep_jobs, outputs):
+        raw = out.outputs[0].text
+        s = line["scores"][system]
+        s['reasoning_trace'] = raw
+        parsed = parse_response(raw)
+        if parsed is None:
+            parsed = top_k
+        s['corrected_topk_spans'] = parsed
+        s['refined_errors'] = (remove_unwanted_fields_in_error(unchanged)
+                               + remove_unwanted_fields_in_error(parsed))
+
+    # write everything back
+    with open(refined_results, 'w', encoding='utf-8') as f:
+        for i, line in enumerate(data):
             f.write(json.dumps(line, ensure_ascii=False) + '\n')
             f.flush()
             os.fsync(f.fileno())
@@ -407,7 +488,7 @@ def main():
         refine_vllm_26(model, data,prompt, 5, args.refined_results)
         print("batched")
     else:
-        refine_25(model, tokenizer, data[0:1],prompt, 3, args.refined_results)
+        refine_vllm_25(model, data,prompt, 5, args.refined_results)
 
     
 

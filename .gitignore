@@ -11,3 +11,5 @@ WMT2026/xcomet_train/data
 WMT2026/wmt24-genmt-humeval.jsonl
 WMT2026/mteval-test26.jsonl
 WMT2026/mt2026_split
+WMT2026/data_json
+WMT2026/to_do.txt
