@@ -11,7 +11,22 @@ def parse_args():
     return parser.parse_args()
 
 def process(data, output):
-    pass
+    with open(output, 'w', encoding='utf-8') as f:
+        for line in data:
+            for system in line['scores']:
+                s= line['scores'][system]
+                print(s.keys())
+                if 'refined_errors' in line['scores'][system]:
+                 
+                    s['error_span'] = s.pop('refined_errors')
+                    #print(s['error_span'].keys())
+                    
+                s.pop('subword_probs')
+                s.pop('logits')
+                
+
+            f.write(json.dumps(line, ensure_ascii=False) + '\n')
+    
 
 def get_input_data(input_json):
     with open(input_json, 'r', encoding='utf-8') as f:

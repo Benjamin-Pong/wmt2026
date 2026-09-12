@@ -42,6 +42,7 @@ def get_counts(ex, len_hyp):
         elif er["severity"] == "minor":
             counts = minor
         else:
+            
             print(er)
             raise ValueError(f"Unknown severity: {er['severity']}")
         counts[int(er["start"]) : int(er["end"])] += 1
@@ -88,6 +89,41 @@ def get_char_f1(len_hypothesis, errors_gold, errors_pred, partial_credit=0.5):
     p, r, f1 = prec_rec_f1(tp, total_gold, total_pred)
     return p, r, f1
 
+def get_char_f1_per_severity(len_hypothesis, errors_gold, errors_pred):
+    """
+    Per-severity character-level P/R/F1.
+    Each severity (major, minor) is scored as an independent binary channel:
+    a span with the correct location but wrong severity counts as a false
+    negative on its gold channel and a false positive on the predicted channel
+    (no cross-severity partial credit).
+    Returns a dict: {"major": (p, r, f1), "minor": (p, r, f1)}.
+    """
+    tp_maj = total_gold_maj = total_pred_maj = 0
+    tp_min = total_gold_min = total_pred_min = 0
+
+    for x, y, z in zip(errors_gold, errors_pred, len_hypothesis):
+        gold_major_counts, gold_minor_counts = get_counts(x, z)
+        pred_major_counts, pred_minor_counts = get_counts(y, z)
+
+        total_gold_maj += gold_major_counts.sum()
+        total_pred_maj += pred_major_counts.sum()
+        total_gold_min += gold_minor_counts.sum()
+        total_pred_min += pred_minor_counts.sum()
+
+        # Per-character overlap within each severity channel only.
+        for c_gold_maj, c_pred_maj, c_gold_min, c_pred_min in zip(
+            gold_major_counts,
+            pred_major_counts,
+            gold_minor_counts,
+            pred_minor_counts,
+        ):
+            tp_maj += min(c_gold_maj, c_pred_maj)
+            tp_min += min(c_gold_min, c_pred_min)
+
+    p_maj, r_maj, f1_maj = prec_rec_f1(tp_maj, total_gold_maj, total_pred_maj)
+    p_min, r_min, f1_min = prec_rec_f1(tp_min, total_gold_min, total_pred_min)
+
+    return {"major": (p_maj, r_maj, f1_maj), "minor": (p_min, r_min, f1_min)}
 
 def get_error_list(x):
     if x["error_types"] == "no-error":
@@ -99,6 +135,8 @@ def get_error_list(x):
 
         errors = []
         for x, y, z in zip(start_indices, end_indices, error_type):
+            if z == "no-error":
+                continue
             if not x or not y or not z:
                 logging.warn("Warning: Missing or empty start_indices, end_indices, or error_types for a non 'no-error' case.")
                 return []
@@ -142,6 +180,8 @@ def main():
 
     final_score_lines = []
     all_scores = []
+    per_sev_major_all = []
+    per_sev_minor_all = []
     for lp in common_lps:
         logging.info(f"Getting errors for pred for {lp}")
         pred_lp = predictions_data[predictions_data["lp"] == lp].copy()
@@ -174,10 +214,37 @@ def main():
         final_score_lines.append(lp.replace("-", "") + "_prec: {:.4}".format(precision))
         all_scores.append([precision, recall, f1])
 
+        #compute per severity F1, P, R
+        sev_scores = get_char_f1_per_severity(
+        merged_lp["len_hyp"].to_list(),
+        merged_lp["errors_gold"].to_list(),
+        merged_lp["errors_pred"].to_list(),
+    )
+        for sev in ("major", "minor"):
+            sev_p, sev_r, sev_f1 = sev_scores[sev]
+            final_score_lines.append(lp.replace("-", "") + f"_{sev}_f1: {sev_f1:.4}")
+            final_score_lines.append(lp.replace("-", "") + f"_{sev}_rec: {sev_r:.4}")
+            final_score_lines.append(lp.replace("-", "") + f"_{sev}_prec: {sev_p:.4}")
+        
+
+        per_sev_major_all.append(list(sev_scores["major"]))   # [p, r, f1]
+        per_sev_minor_all.append(list(sev_scores["minor"]))
+    #
     average_scores = np.mean(np.array(all_scores), axis=0)
     final_score_lines.append("avg_f1: {:.4}".format(average_scores[2]))
     final_score_lines.append("avg_prec: {:.4}".format(average_scores[0]))
     final_score_lines.append("avg_rec: {:.4}".format(average_scores[1]))
+
+    per_sev_major_average = np.mean(np.array(per_sev_major_all), axis=0)
+    per_sev_minor_average = np.mean(np.array(per_sev_minor_all), axis=0)
+    final_score_lines.append("major_avg_f1: {:.4}".format(per_sev_major_average[2]))
+    final_score_lines.append("major_avg_prec: {:.4}".format(per_sev_major_average[0]))
+    final_score_lines.append("major_avg_rec: {:.4}".format(per_sev_major_average[1]))
+
+    final_score_lines.append("minor_avg_f1: {:.4}".format(per_sev_minor_average[2]))
+    final_score_lines.append("minor_avg_prec: {:.4}".format(per_sev_minor_average[0]))
+    final_score_lines.append("minor_avg_rec: {:.4}".format(per_sev_minor_average[1]))
+
 
     with open(os.path.join(output_dir, "scores.txt"), "w", encoding="utf-8") as wf:
         for line in final_score_lines:

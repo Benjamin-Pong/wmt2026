@@ -33,9 +33,11 @@ def unpack_error_span(error_spans):
         start_indices.append(str(error_span['start']))
         end_indices.append(str(error_span['end']))
         error_types.append(error_span['severity'])
-        span_entropies.append(str(error_span['span_entropy']))
-        print(error_span['span_entropy'])
-        span_confidences.append(str(error_span['confidence']))
+        if 'span_entropy' in error_span:
+            span_entropies.append(str(error_span['span_entropy']))
+            print(error_span['span_entropy'])
+        if 'confidence' in error_span:
+            span_confidences.append(str(error_span['confidence']))
     
     return ' '.join(start_indices), ' '.join(end_indices), ' '.join(error_types), ' '.join(span_confidences), ' '.join(span_entropies)
 
